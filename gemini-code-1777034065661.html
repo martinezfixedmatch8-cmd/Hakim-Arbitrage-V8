@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAKIM ARBITRAGE PRO | FULL SYSTEM</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root { --primary: #00ff88; --bg: #020617; --card: #0f172a; --gold: #f3ba2f; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; }
+        
+        /* Layout */
+        .sidebar { position: fixed; left: 0; width: 250px; height: 100vh; background: #010409; border-right: 1px solid #30363d; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; z-index: 100;}
+        .main-content { margin-left: 250px; padding: 40px; }
+        
+        /* Navigation Links */
+        .nav-item { padding: 15px; cursor: pointer; color: #8b949e; display: flex; align-items: center; gap: 10px; border-radius: 8px; transition: 0.3s; margin-bottom: 5px; }
+        .nav-item:hover, .nav-item.active { background: #161b22; color: var(--primary); }
+
+        /* Sections */
+        .page-section { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .active-section { display: block; }
+
+        /* Custom Cards */
+        .card { background: var(--card); border: 1px solid #30363d; border-radius: 12px; padding: 25px; margin-bottom: 20px; }
+        .balance-text { font-size: 32px; font-weight: 800; color: var(--primary); }
+        
+        /* Inputs & Buttons */
+        input { width: 100%; padding: 12px; background: #0d1117; border: 1px solid #30363d; color: white; border-radius: 6px; margin: 10px 0; }
+        .btn-action { width: 100%; padding: 14px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* Leaderboard Table */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #30363d; }
+        th { color: #8b949e; }
+
+        /* Chat Widget */
+        .chat-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; cursor: pointer; z-index: 1000; font-size: 24px; box-shadow: 0 0 15px var(--primary); }
+        .chat-box { position: fixed; bottom: 100px; right: 30px; width: 320px; height: 450px; background: var(--card); border: 1px solid var(--primary); border-radius: 15px; display: none; flex-direction: column; z-index: 1000; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2 style="color: var(--primary); font-size: 18px; margin-bottom: 40px;"><i class="fas fa-robot"></i> HAKIM PRO v8</h2>
+        <div class="nav-item active" onclick="nav('dashboard')"><i class="fas fa-home"></i> Dashboard</div>
+        <div class="nav-item" onclick="nav('register')"><i class="fas fa-user-plus"></i> Samayso Account</div>
+        <div class="nav-item" onclick="nav('deposit')"><i class="fas fa-wallet"></i> Deposit (USDT)</div>
+        <div class="nav-item" onclick="nav('withdraw')"><i class="fas fa-money-bill-wave"></i> Withdraw</div>
+        <div class="nav-item" onclick="nav('leaderboard')"><i class="fas fa-trophy"></i> Leaderboard</div>
+        <div class="nav-item" onclick="nav('info')"><i class="fas fa-info-circle"></i> Sida uu u shaqeeyo</div>
+        <hr style="width: 100%; border-color: #30363d; margin: 20px 0;">
+        <div class="nav-item" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Logout</div>
+    </div>
+
+    <div class="main-content">
+
+        <div id="dashboard" class="page-section active-section">
+            <h1>Ku soo dhawaaw, <span style="color: var(--primary);">Hasan</span></h1>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                <div class="card">
+                    <p>Wadarta Lacagta (Total Balance)</p>
+                    <div class="balance-text">$1,240.50</div>
+                    <p style="color: var(--primary); font-size: 14px;"><i class="fas fa-chart-line"></i> Daily Profit: +$45.00 today</p>
+                </div>
+                <div class="card" style="border-color: var(--gold);">
+                    <h3>Bot-ka Firfircoon</h3>
+                    <div style="color: var(--gold); font-weight: bold;">LEGEND BOT AI</div>
+                    <p style="font-size: 12px;">Xaaladda: <span style="color: var(--primary);">Running...</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="register" class="page-section">
+            <div class="card" style="max-width: 500px; margin: auto;">
+                <h2>Sameyso Account Cusub</h2>
+                <input type="text" placeholder="Magacaaga oo buuxa">
+                <input type="email" placeholder="Email (Example: pannyshp@gmail.com)">
+                <input type="password" placeholder="Create Password">
+                <input type="password" placeholder="Confirm Password">
+                <button class="btn-action">Create Account Now</button>
+            </div>
+        </div>
+
+        <div id="deposit" class="page-section">
+            <h2>Kushubo Lacag (Deposit)</h2>
+            <div class="card">
+                <h3>Your Personal USDT (BEP20) Address</h3>
+                <p style="font-size: 13px; color: #8b949e;">Cinwaankan adiga ayaa kuu gaar ah. Lacagta aad ku shubto waxay si toos ah ugu muuqanaysaa Dashboard-kaaga.</p>
+                <div style="background: #000; padding: 20px; border-radius: 8px; border: 1px dashed var(--primary); color: var(--primary); font-family: monospace; text-align: center; font-size: 18px;">
+                    0x71C7656EC7ab88b098defB751B7401B5f6d8976F
+                </div>
+                <button class="btn-action" style="margin-top: 15px;" onclick="alert('Address Copied!')">Copy Address</button>
+                <p style="color: #ff4444; font-size: 12px; margin-top: 10px;"><i class="fas fa-exclamation-triangle"></i> Kaliya soo dir USDT (BEP20). Lacagaha kale ma soo dhacayaan.</p>
+            </div>
+        </div>
+
+        <div id="leaderboard" class="page-section">
+            <h2>Top Traders (Leaderboard)</h2>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr><th>Rank</th><th>Username</th><th>Total Profit</th><th>Bot Type</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>🥇 1</td><td>Abdi_King</td><td>$15,400</td><td>Legend AI</td></tr>
+                        <tr><td>🥈 2</td><td>Sara_Crypto</td><td>$12,100</td><td>Legend AI</td></tr>
+                        <tr><td>🥉 3</td><td>Hassan_99</td><td>$8,550</td><td>Matrix AI</td></tr>
+                        <tr><td>4</td><td>Muna_BTC</td><td>$5,200</td><td>Alpha Bot</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="info" class="page-section">
+            <h2>Sidee Software-kani u shaqeeyaa?</h2>
+            <div class="card">
+                <h3>1. Is-diiwaangeli</h3>
+                <p>Sameyso account adiga oo isticmaalaya email-kaaga iyo password sugan.</p>
+                <h3>2. Kireyso Bot</h3>
+                <p>Dooro Bot-ka kugu haboon (Alpha, Matrix, ama Legend). Mid kasta wuxuu leeyahay faa'iido gooni ah.</p>
+                <h3>3. Daily Profit</h3>
+                <p>AI-geena ayaa suuqyada caalamiga ah ee Crypto ka dhex ganacsada, adiguna waxaad helaysaa dakhli maalinle ah oo sugan.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="chat-btn" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></div>
+    <div class="chat-box" id="chatBox">
+        <div style="background: var(--primary); color: #000; padding: 15px; border-radius: 12px 12px 0 0; font-weight: bold;">HAKIM SUPPORT LIVE</div>
+        <div style="flex: 1; padding: 15px; font-size: 13px; overflow-y: auto;" id="chatMessages">
+            <div style="background: #161b22; padding: 10px; border-radius: 8px; margin-bottom: 10px;"><b>Support:</b> Asc! Ku soo dhawaaw Hakim Arbitrage. Sideen kuu caawin karnaa?</div>
+        </div>
+        <div style="padding: 10px; display: flex; gap: 5px;">
+            <input type="text" placeholder="Type here..." style="margin: 0; padding: 8px;">
+            <button style="background: var(--primary); border: none; padding: 10px; border-radius: 5px;"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script>
+        function nav(sectionId) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active-section'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(sectionId).classList.add('active-section');
+            event.currentTarget.classList.add('active');
+        }
+
+        function toggleChat() {
+            const box = document.getElementById('chatBox');
+            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+        }
+    </script>
+</body>
+</html>
