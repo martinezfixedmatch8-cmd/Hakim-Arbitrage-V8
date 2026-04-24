@@ -629,7 +629,6 @@
     </header>
 
     <div class="container">
-        <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
                 <i class="fas fa-wallet"></i>
@@ -653,7 +652,6 @@
             </div>
         </div>
 
-        <!-- Live Chart -->
         <div class="chart-container">
             <div class="chart-header">
                 <h3><i class="fas fa-chart-line" style="color: var(--primary);"></i> Live Arbitrage Performance</h3>
@@ -662,15 +660,12 @@
             <canvas id="priceChart" height="150"></canvas>
         </div>
 
-        <!-- Leadership Ranks -->
         <h2 class="section-title"><i class="fas fa-trophy" style="color: var(--gold);"></i> Leadership Career Path</h2>
         <div class="rank-grid" id="rankGrid"></div>
 
-        <!-- AI Bot Marketplace -->
         <h2 class="section-title"><i class="fas fa-robot"></i> AI Bot Marketplace (5 Years Validity)</h2>
         <div class="bot-grid" id="botGrid"></div>
 
-        <!-- Deposit & Withdraw -->
         <div class="action-grid">
             <div class="action-card">
                 <h3><i class="fas fa-arrow-down" style="color: var(--primary);"></i> Deposit USDT (BEP20)</h3>
@@ -693,43 +688,18 @@
             </div>
         </div>
 
-        <!-- Recent Transactions -->
         <div class="table-container">
             <div style="padding: 20px; border-bottom: 1px solid var(--border-glass);">
                 <h3><i class="fas fa-history"></i> Recent Transactions</h3>
             </div>
             <table>
                 <thead>
-                    <tr>
-                        <th>Transaction ID</th>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                    </tr>
+                    <tr><th>Transaction ID</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th></tr>
                 </thead>
-                <tbody id="transactionsTable">
-                    <tr>
-                        <td>#HK-001</td>
-                        <td>Deposit</td>
-                        <td>+$100.00</td>
-                        <td>2026-04-24</td>
-                        <td class="status-success">Completed</td>
-                    </tr>
-                    <tr>
-                        <td>#HK-002</td>
-                        <td>Bot Rental</td>
-                        <td>-$99.99</td>
-                        <td>2026-04-23</td>
-                        <td class="status-success">Completed</td>
-                    </tr>
-                    <tr>
-                        <td>#HK-003</td>
-                        <td>Daily Profit</td>
-                        <td>+$3.50</td>
-                        <td>2026-04-24</td>
-                        <td class="status-success">Credited</td>
-                    </tr>
+                <tbody>
+                    <tr><td>#HK-001</td><td>Deposit</td><td>+$100.00</td><td>2026-04-24</td><td class="status-success">Completed</td></tr>
+                    <tr><td>#HK-002</td><td>Bot Rental</td><td>-$99.99</td><td>2026-04-23</td><td class="status-success">Completed</td></tr>
+                    <tr><td>#HK-003</td><td>Daily Profit</td><td>+$3.50</td><td>2026-04-24</td><td class="status-success">Credited</td></tr>
                 </tbody>
             </table>
         </div>
@@ -741,7 +711,6 @@
     </footer>
 </div>
 
-<!-- Withdrawal Toast -->
 <div id="withdrawalToast" class="toast-notification">
     <i class="fas fa-check-circle" style="color: var(--primary); font-size: 20px;"></i>
     <div>
@@ -756,33 +725,32 @@
 
 <script>
     // ============================================
-    // API URL - HALKAN KU BEDEL HADHII BACKEND KAAGU KALE MEEJO
-    // Hadda waxaan u dhignay localhost:3000
+    // API_URL - HADDA WAA SAX OO WUXUU KU XIRAN YAHAY BACKEND-KA RAILWAY
     // ============================================
-    const API_URL = "http://localhost:3000";
+    const API_URL = "https://hakim-arbitrage-v8.up.railway.app";
     
     let currentUser = null;
     let priceChart = null;
     
     const bots = [
-        { id: 1, name: "Nano Bot", price: 29.99, daily: 1.00, refReward: 2.00, color: "#00ff88" },
-        { id: 2, name: "Swift Bot", price: 59.99, daily: 2.00, refReward: 4.00, color: "#00ff88" },
-        { id: 3, name: "Alpha Bot", price: 99.99, daily: 3.50, refReward: 7.00, color: "#00ff88", recommended: true },
-        { id: 4, name: "Matrix Bot", price: 299.99, daily: 10.50, refReward: 20.00, color: "#2563eb" },
-        { id: 5, name: "Titan Bot", price: 399.99, daily: 14.50, refReward: 28.00, color: "#2563eb" },
-        { id: 6, name: "Oracle Bot", price: 499.99, daily: 18.50, refReward: 35.00, color: "#f3ba2f" },
-        { id: 7, name: "Legend Bot", price: 599.99, daily: 23.00, refReward: 45.00, color: "#ff4d4d" }
+        { id: 1, name: "Nano Bot", price: 29.99, daily: 1.00, refReward: 2.00 },
+        { id: 2, name: "Swift Bot", price: 59.99, daily: 2.00, refReward: 4.00 },
+        { id: 3, name: "Alpha Bot", price: 99.99, daily: 3.50, refReward: 7.00, recommended: true },
+        { id: 4, name: "Matrix Bot", price: 299.99, daily: 10.50, refReward: 20.00 },
+        { id: 5, name: "Titan Bot", price: 399.99, daily: 14.50, refReward: 28.00 },
+        { id: 6, name: "Oracle Bot", price: 499.99, daily: 18.50, refReward: 35.00 },
+        { id: 7, name: "Legend Bot", price: 599.99, daily: 23.00, refReward: 45.00 }
     ];
     
     const ranks = [
-        { name: "SILVER LEADER", level: "L1", salary: 400, icon: "fas fa-medal", color: "#c0c0c0", requirement: "20 Direct Referrals ($99.99+)", progress: 45 },
-        { name: "GOLD LEADER", level: "L2", salary: 1000, icon: "fas fa-crown", color: "#f3ba2f", requirement: "5 Silver Leaders in team", progress: 20 },
-        { name: "DIAMOND LEADER", level: "L3", salary: 2000, icon: "fas fa-gem", color: "#b9f2ff", requirement: "10 Gold Leaders in team", progress: 10 },
-        { name: "REGIONAL MANAGER", level: "L4", salary: 5000, icon: "fas fa-building", color: "#ff00ff", requirement: "5 Diamond Leaders + Office", progress: 0 }
+        { name: "SILVER LEADER", level: "L1", salary: 400, icon: "fas fa-medal", color: "#c0c0c0", requirement: "20 Direct Referrals", progress: 45 },
+        { name: "GOLD LEADER", level: "L2", salary: 1000, icon: "fas fa-crown", color: "#f3ba2f", requirement: "5 Silver Leaders", progress: 20 },
+        { name: "DIAMOND LEADER", level: "L3", salary: 2000, icon: "fas fa-gem", color: "#b9f2ff", requirement: "10 Gold Leaders", progress: 10 },
+        { name: "REGIONAL MANAGER", level: "L4", salary: 5000, icon: "fas fa-building", color: "#ff00ff", requirement: "5 Diamond Leaders", progress: 0 }
     ];
     
-    const users = ["Ahmed_M", "Sara_Crypto", "Hassan_77", "Fatima_AI", "User_992", "CryptoKing", "Abdi_Wali", "Zahra_Pro"];
-    const wdamounts = ["45.50", "120.00", "399.00", "28.10", "1,200.00", "75.00", "599.00", "250.00"];
+    const users = ["Ahmed_M", "Sara_Crypto", "Hassan_77", "Fatima_AI", "User_992"];
+    const amounts = ["45.50", "120.00", "399.00", "28.10", "1200.00"];
     
     function generateParticles() {
         const container = document.getElementById('particles');
@@ -815,16 +783,13 @@
                     tension: 0.4,
                     pointBackgroundColor: '#00ff88',
                     pointBorderColor: '#00ff88',
-                    pointRadius: 4,
-                    pointHoverRadius: 6
+                    pointRadius: 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
-                plugins: {
-                    legend: { labels: { color: '#94a3b8' } }
-                },
+                plugins: { legend: { labels: { color: '#94a3b8' } } },
                 scales: {
                     y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
                     x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
@@ -847,13 +812,12 @@
     function renderBots() {
         const container = document.getElementById('botGrid');
         container.innerHTML = bots.map(bot => `
-            <div class="bot-card" style="animation-delay: ${bot.id * 0.1}s">
+            <div class="bot-card">
                 ${bot.recommended ? '<div class="bot-badge"><i class="fas fa-star"></i> RECOMMENDED</div>' : '<div class="bot-badge">AI-Powered</div>'}
                 <div class="bot-name">${bot.name}</div>
                 <div class="bot-price">$${bot.price}</div>
                 <div class="bot-daily"><i class="fas fa-chart-line"></i> Daily: $${bot.daily}</div>
-                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 10px;"><i class="fas fa-users"></i> Ref Reward: $${bot.refReward}</div>
-                <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 15px;"><i class="fas fa-calendar-check"></i> 5 Years Validity</div>
+                <div style="font-size: 12px; color: var(--text-gray);"><i class="fas fa-users"></i> Ref Reward: $${bot.refReward}</div>
                 <button class="rent-btn" onclick="rentBot('${bot.name}', ${bot.price})">Rent Bot</button>
             </div>
         `).join('');
@@ -865,10 +829,9 @@
             <div class="rank-card">
                 <div class="rank-icon"><i class="${rank.icon}" style="color: ${rank.color};"></i></div>
                 <div class="rank-title" style="color: ${rank.color};">${rank.name} (${rank.level})</div>
-                <div class="rank-salary">$${rank.salary}<small style="font-size: 12px;">/month</small></div>
+                <div class="rank-salary">$${rank.salary}<small>/month</small></div>
                 <div class="progress"><div class="progress-fill" style="width: ${rank.progress}%; background: ${rank.color};"></div></div>
                 <p style="font-size: 11px; color: var(--text-gray);">${rank.requirement}</p>
-                <p style="font-size: 10px; color: ${rank.progress >= 100 ? '#00ff88' : rank.color};">Progress: ${rank.progress}%</p>
             </div>
         `).join('');
     }
@@ -876,9 +839,9 @@
     function showWithdrawalNotification() {
         const toast = document.getElementById('withdrawalToast');
         const randomUser = users[Math.floor(Math.random() * users.length)];
-        const randomAmount = wdamounts[Math.floor(Math.random() * wdamounts.length)];
+        const randomAmount = amounts[Math.floor(Math.random() * amounts.length)];
         document.getElementById('toastUser').innerHTML = `User: ${randomUser}`;
-        document.getElementById('toastMsg').innerHTML = `Just withdrew $${randomAmount} via USDT (BEP20)`;
+        document.getElementById('toastMsg').innerHTML = `Just withdrew $${randomAmount} via USDT`;
         toast.style.transform = "translateX(0)";
         setTimeout(() => { toast.style.transform = "translateX(-150%)"; }, 5000);
     }
@@ -890,11 +853,9 @@
     }
     
     async function rentBot(botName, price) {
-        if (!currentUser) return;
-        if (currentUser.balance < price) {
-            alert(`Insufficient balance! You need $${price} to rent ${botName}. Current balance: $${currentUser.balance}`);
-            return;
-        }
+        if (!currentUser) return alert("Please login first");
+        if (currentUser.balance < price) return alert(`Insufficient balance! Need $${price}`);
+        
         try {
             const response = await fetch(`${API_URL}/api/rent-bot`, {
                 method: 'POST',
@@ -906,31 +867,18 @@
                 currentUser.balance = data.newBalance;
                 currentUser.botPlan = data.botPlan;
                 updateDashboard();
-                alert(`Successfully rented ${botName}! Your bot is now active.`);
-            } else {
-                alert(data.error || "Failed to rent bot");
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Error connecting to server");
-        }
+                alert(`Successfully rented ${botName}!`);
+            } else alert(data.error);
+        } catch (err) { alert("Error connecting to server"); }
     }
     
     async function requestWithdraw() {
         const amount = parseFloat(document.getElementById('withdrawAmount').value);
         const address = document.getElementById('withdrawAddress').value;
-        if (!amount || amount < 10) {
-            alert("Please enter a valid amount (minimum $10)");
-            return;
-        }
-        if (!address || address.length < 30) {
-            alert("Please enter a valid BEP20 wallet address");
-            return;
-        }
-        if (currentUser && currentUser.balance < amount) {
-            alert("Insufficient balance!");
-            return;
-        }
+        if (!amount || amount < 10) return alert("Minimum $10");
+        if (!address || address.length < 30) return alert("Valid BEP20 address required");
+        if (currentUser.balance < amount) return alert("Insufficient balance");
+        
         try {
             const response = await fetch(`${API_URL}/api/withdraw`, {
                 method: 'POST',
@@ -938,16 +886,9 @@
                 body: JSON.stringify({ email: currentUser.email, amount, address })
             });
             const data = await response.json();
-            if (data.success) {
-                alert(`Withdrawal request submitted! Amount: $${amount} will be processed within 24 hours.`);
-                document.getElementById('withdrawAmount').value = '';
-                document.getElementById('withdrawAddress').value = '';
-            } else {
-                alert(data.error || "Withdrawal failed");
-            }
-        } catch (err) {
-            alert("Error connecting to server");
-        }
+            if (data.success) alert(`Withdrawal of $${amount} submitted!`);
+            else alert(data.error);
+        } catch (err) { alert("Error connecting to server"); }
     }
     
     function updateDashboard() {
@@ -955,23 +896,17 @@
             document.getElementById('totalBalance').innerText = `$${currentUser.balance.toFixed(2)}`;
             document.getElementById('activeBot').innerText = currentUser.botPlan || "None";
             document.getElementById('depositAddress').innerText = currentUser.depositAddress;
-            document.getElementById('userDisplay').innerHTML = `<i class="fas fa-user"></i> ${currentUser.name} (${currentUser.userId})`;
-            if (currentUser.botPlan) {
-                const activeBot = bots.find(b => b.name === currentUser.botPlan);
-                if (activeBot) {
-                    document.getElementById('dailyProfit').innerText = `$${activeBot.daily.toFixed(2)}`;
-                }
-            }
+            document.getElementById('userDisplay').innerHTML = `<i class="fas fa-user"></i> ${currentUser.name}`;
+            const activeBot = bots.find(b => b.name === currentUser.botPlan);
+            if (activeBot) document.getElementById('dailyProfit').innerText = `$${activeBot.daily.toFixed(2)}`;
         }
     }
     
     async function handleLogin() {
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
-        if (!email || !password) {
-            alert("Please enter email and password");
-            return;
-        }
+        if (!email || !password) return alert("Enter email and password");
+        
         try {
             const response = await fetch(`${API_URL}/api/login`, {
                 method: 'POST',
@@ -990,13 +925,8 @@
                 generateParticles();
                 setInterval(showWithdrawalNotification, 20000);
                 setTimeout(showWithdrawalNotification, 3000);
-            } else {
-                alert(data.error || "Login failed");
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Error connecting to server. Make sure your backend is running on " + API_URL);
-        }
+            } else alert(data.error);
+        } catch (err) { alert("Error connecting to server: " + API_URL); }
     }
     
     async function handleRegister() {
@@ -1004,18 +934,10 @@
         const email = document.getElementById('regEmail').value;
         const password = document.getElementById('regPassword').value;
         const confirm = document.getElementById('regConfirmPassword').value;
-        if (!name || !email || !password) {
-            alert("Please fill all fields");
-            return;
-        }
-        if (password !== confirm) {
-            alert("Passwords do not match");
-            return;
-        }
-        if (password.length < 6) {
-            alert("Password must be at least 6 characters");
-            return;
-        }
+        if (!name || !email || !password) return alert("Fill all fields");
+        if (password !== confirm) return alert("Passwords do not match");
+        if (password.length < 6) return alert("Password min 6 characters");
+        
         try {
             const response = await fetch(`${API_URL}/api/register`, {
                 method: 'POST',
@@ -1024,15 +946,10 @@
             });
             const data = await response.json();
             if (data.success) {
-                alert(`Account created successfully! Your User ID: ${data.userId}\nDeposit Address: ${data.depositAddress}\nCheck your email for confirmation.`);
+                alert(`Account created! ID: ${data.userId}\nDeposit: ${data.depositAddress}`);
                 showLogin();
-            } else {
-                alert(data.error || "Registration failed");
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Error connecting to server");
-        }
+            } else alert(data.error);
+        } catch (err) { alert("Error connecting to server"); }
     }
     
     function showRegister() {
@@ -1049,12 +966,6 @@
         currentUser = null;
         document.getElementById('authView').style.display = 'flex';
         document.getElementById('dashboardView').style.display = 'none';
-        document.getElementById('loginEmail').value = '';
-        document.getElementById('loginPassword').value = '';
-        document.getElementById('regName').value = '';
-        document.getElementById('regEmail').value = '';
-        document.getElementById('regPassword').value = '';
-        document.getElementById('regConfirmPassword').value = '';
     }
     
     generateParticles();
