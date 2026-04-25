@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAKIM AI | Admin Panel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0c10; color: white; font-family: 'Inter', sans-serif; }
+        .admin-header { background: linear-gradient(135deg, #1a1f2c, #0f121a); padding: 20px; border-bottom: 2px solid #f3ba2f; }
+        .admin-header h1 { font-family: 'Orbitron'; color: #f3ba2f; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 20px; }
+        .stat-card { background: #1e2329; padding: 20px; border-radius: 16px; text-align: center; border: 1px solid #2d333c; }
+        .stat-card h3 { font-size: 28px; color: #f3ba2f; }
+        .container { padding: 20px; }
+        table { width: 100%; border-collapse: collapse; background: #1e2329; border-radius: 16px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #2d333c; }
+        th { background: #13161d; color: #f3ba2f; }
+        .status-pending { color: #f6465d; }
+        .status-approved { color: #0ecb81; }
+        .btn-approve { background: #0ecb81; color: black; border: none; padding: 5px 12px; border-radius: 8px; cursor: pointer; }
+        .btn-reject { background: #f6465d; color: white; border: none; padding: 5px 12px; border-radius: 8px; cursor: pointer; }
+        .admin-login { max-width: 400px; margin: 100px auto; background: #1e2329; padding: 30px; border-radius: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #2b3139; border: none; border-radius: 8px; color: white; }
+        .btn-login { background: #f3ba2f; color: black; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .hidden { display: none; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { background: #1e2329; padding: 10px 20px; border-radius: 10px; cursor: pointer; }
+        .tab.active { background: #f3ba2f; color: black; }
+    </style>
+</head>
+<body>
+
+<div id="adminLoginPage" class="admin-login">
+    <h1 style="text-align: center; color: #f3ba2f; margin-bottom: 20px;">🔐 ADMIN LOGIN</h1>
+    <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+    <button class="btn-login" onclick="adminLogin()">Login</button>
+    <p style="text-align: center; margin-top: 15px; color: #8a92a3; font-size: 12px;">Default Password: <strong style="color:#f3ba2f;">admin123</strong></p>
+</div>
+
+<div id="adminDashboard" class="hidden">
+    <div class="admin-header">
+        <h1><i class="fas fa-user-shield"></i> HAKIM AI - ADMIN PANEL</h1>
+        <p>Manage users, deposits, and system settings</p>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><i class="fas fa-users"></i><h3 id="totalUsers">0</h3><p>Total Users</p></div>
+        <div class="stat-card"><i class="fas fa-chart-line"></i><h3 id="totalBalance">$0</h3><p>Total Balance</p></div>
+        <div class="stat-card"><i class="fas fa-coins"></i><h3 id="totalDeposits">$0</h3><p>Total Deposits</p></div>
+        <div class="stat-card"><i class="fas fa-clock"></i><h3 id="pendingDeposits">0</h3><p>Pending Deposits</p></div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('users')">👥 Users</div>
+            <div class="tab" onclick="showTab('deposits')">💰 Pending Deposits</div>
+            <div class="tab" onclick="showTab('withdrawals')">📤 Withdrawals</div>
+        </div>
+
+        <!-- Users Table -->
+        <div id="usersTab">
+            <h3 style="margin-bottom: 15px;">All Users</h3>
+            <div style="overflow-x: auto;">
+                <table id="usersTable">
+                    <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Balance</th><th>Total Deposit</th><th>Bot</th><th>Rank</th><th>Joined</th></tr></thead>
+                    <tbody id="usersTableBody"><tr><td colspan="8">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Deposits Tab -->
+        <div id="depositsTab" class="hidden">
+            <h3 style="margin-bottom: 15px;">Pending Deposits</h3>
+            <div style="overflow-x: auto;">
+                <table id="depositsTable">
+                    <thead><tr><th>User</th><th>Email</th><th>TXID</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead>
+                    <tbody id="depositsTableBody"><tr><td colspan="6">No pending deposits</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Withdrawals Tab -->
+        <div id="withdrawalsTab" class="hidden">
+            <h3 style="margin-bottom: 15px;">Withdrawal Requests</h3>
+            <div style="overflow-x: auto;">
+                <table id="withdrawalsTable">
+                    <thead><tr><th>User</th><th>Email</th><th>Amount</th><th>Address</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="withdrawalsTableBody"><tr><td colspan="7">No withdrawal requests</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://hakim-arbitrage-v8.up.railway.app";
+    let adminToken = localStorage.getItem('adminToken');
+
+    function adminLogin() {
+        const password = document.getElementById('adminPassword').value;
+        if (password === 'admin123') {
+            localStorage.setItem('adminToken', 'admin_logged_in');
+            document.getElementById('adminLoginPage').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            loadAdminData();
+        } else {
+            alert('Wrong password!');
+        }
+    }
+
+    async function loadAdminData() {
+        await loadUsers();
+        await loadPendingDeposits();
+        // await loadWithdrawals();
+    }
+
+    async function loadUsers() {
+        try {
+            const res = await fetch(`${API_URL}/api/admin/users`);
+            const data = await res.json();
+            const users = data.users || [];
+            
+            document.getElementById('totalUsers').innerText = users.length;
+            const totalBalance = users.reduce((sum, u) => sum + (u.balance || 0), 0);
+            const totalDeposits = users.reduce((sum, u) => sum + (u.totalDeposit || 0), 0);
+            document.getElementById('totalBalance').innerText = `$${totalBalance.toFixed(2)}`;
+            document.getElementById('totalDeposits').innerText = `$${totalDeposits.toFixed(2)}`;
+            
+            const tbody = document.getElementById('usersTableBody');
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8">No users found</td></tr>';
+            } else {
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.userId || user._id?.slice(-6) || 'N/A'}</td>
+                        <td>${user.name || 'N/A'}</td>
+                        <td>${user.email || 'N/A'}</td>
+                        <td>$${(user.balance || 0).toFixed(2)}</td>
+                        <td>$${(user.totalDeposit || 0).toFixed(2)}</td>
+                        <td>${user.botPlan || 'None'}</td>
+                        <td>${user.rank || 'TRAINEE'}</td>
+                        <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</td>
+                    </tr>
+                `).join('');
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="8">Error loading users</td></tr>';
+        }
+    }
+
+    async function loadPendingDeposits() {
+        try {
+            const res = await fetch(`${API_URL}/api/admin/pending-deposits`);
+            const data = await res.json();
+            const pending = data.pendingDeposits || [];
+            
+            document.getElementById('pendingDeposits').innerText = pending.length;
+            
+            const tbody = document.getElementById('depositsTableBody');
+            if (pending.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6">No pending deposits</td></tr>';
+            } else {
+                tbody.innerHTML = pending.map(dep => `
+                    <tr>
+                        <td>${dep.userName || 'N/A'}</td>
+                        <td>${dep.userEmail || 'N/A'}</td>
+                        <td><small>${dep.txid?.slice(0, 20)}...</small></td>
+                        <td>$${dep.amount || 0}</td>
+                        <td>${dep.createdAt ? new Date(dep.createdAt).toLocaleDateString() : 'N/A'}</td>
+                        <td>
+                            <button class="btn-approve" onclick="approveDeposit('${dep.userId}', '${dep.depositId}', ${prompt('Enter amount:', dep.amount || 100)})">Approve</button>
+                            <button class="btn-reject" onclick="rejectDeposit('${dep.userId}', '${dep.depositId}')">Reject</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function approveDeposit(userId, depositId, amount) {
+        if (!amount || amount <= 0) return;
+        try {
+            const res = await fetch(`${API_URL}/api/admin/approve-deposit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, depositId, amount })
+            });
+            if (res.ok) {
+                alert('Deposit approved!');
+                loadPendingDeposits();
+                loadUsers();
+            } else {
+                alert('Failed to approve deposit');
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    }
+
+    function rejectDeposit(userId, depositId) {
+        alert('Reject functionality - implement backend endpoint');
+    }
+
+    function showTab(tab) {
+        document.getElementById('usersTab').classList.add('hidden');
+        document.getElementById('depositsTab').classList.add('hidden');
+        document.getElementById('withdrawalsTab').classList.add('hidden');
+        
+        document.getElementById(`${tab}Tab`).classList.remove('hidden');
+        
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    if (adminToken === 'admin_logged_in') {
+        document.getElementById('adminLoginPage').classList.add('hidden');
+        document.getElementById('adminDashboard').classList.remove('hidden');
+        loadAdminData();
+    }
+</script>
+</body>
+</html>
