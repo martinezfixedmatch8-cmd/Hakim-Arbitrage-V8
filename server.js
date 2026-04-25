@@ -9,7 +9,7 @@ const crypto = require("crypto");
 const speakeasy = require("speakeasy");
 
 // Web3 import - FIXED!
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 const TronWeb = require("tronweb");
 
 const app = express();
