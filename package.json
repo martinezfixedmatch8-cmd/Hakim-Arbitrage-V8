@@ -30,5 +30,8 @@
   "bugs": {
     "url": "https://github.com/martinezfixedmatch8-cmd/Hakim-Arbitrage-V8/issues"
   },
-  "homepage": "https://github.com/martinezfixedmatch8-cmd/Hakim-Arbitrage-V8#readme"
+  "homepage": "https://github.com/martinezfixedmatch8-cmd/Hakim-Arbitrage-V8#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }
