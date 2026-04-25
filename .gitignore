@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Environment variables (Muhiim!)
+.env
+.env.local
+.env.production
+
+# Logs
+*.log
+arbitrage-logs.txt
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build files
+dist/
+build/
+.next/
+
+# MongoDB
+*.mongodb
+
+# Secrets
+*.pem
+*.key
+*.crt
+
+# PM2
+.pm2/
+
+# Temp files
+tmp/
+temp/
+*.tmp
