@@ -8,7 +8,7 @@ const axios = require("axios");
 const crypto = require("crypto");
 const speakeasy = require("speakeasy");
 
-// Web3 import - FIXED!
+// Web3 v4.x - DESTRUCTURE FIX!
 const { Web3 } = require("web3");
 const TronWeb = require("tronweb");
 
@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log('✅ MongoDB Connected'))
     .catch(err => console.error('❌ MongoDB Error:', err));
 
-// ==================== WEB3 SETUP (FIXED) ====================
+// ==================== WEB3 SETUP ====================
 const bsc = new Web3("https://bsc-dataseed.binance.org/");
 const tronWeb = new TronWeb({ fullHost: "https://api.trongrid.io" });
 
