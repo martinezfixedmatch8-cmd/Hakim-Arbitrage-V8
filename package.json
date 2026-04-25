@@ -6,11 +6,26 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "axios": "^1.15.2",
+    "bcryptjs": "^2.4.3",
+    "ccxt": "^4.5.50",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
     "express": "^4.18.2",
     "mongoose": "^8.0.0",
-    "nodemailer": "^6.9.7",
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1"
-  }
+    "nodemailer": "^6.9.7"
+  },
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martinezfixedmatch8-cmd/Hakim-Arbitrage-V8.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/martinezfixedmatch8-cmd/Hakim-Arbitrage-V8/issues"
+  },
+  "homepage": "https://github.com/martinezfixedmatch8-cmd/Hakim-Arbitrage-V8#readme"
 }
