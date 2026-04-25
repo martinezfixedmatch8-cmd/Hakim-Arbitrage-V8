@@ -1,55 +1,291 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HAKIM AI | Quantum Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <style>
-        :root {
-            --primary: #FFD700;
-            --bg: #05070a;
-            --card: #141923;
-            --text-gray: #8a92a3;
-        }
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 
-        body {
-            background: var(--bg);
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+// ==================== Navbar Component ====================
+function Navbar() {
+  return (
+    <nav className="bg-bg text-white p-4 flex justify-between items-center flex-wrap gap-4">
+      <h1 className="text-primary font-bold text-2xl">Hakim AI</h1>
+      <div className="space-x-4 text-sm">
+        <Link to="/" className="hover:text-primary">Home</Link>
+        <Link to="/pricing" className="hover:text-primary">Pricing</Link>
+        <Link to="/faq" className="hover:text-primary">FAQ</Link>
+        <Link to="/terms" className="hover:text-primary">Terms</Link>
+        <Link to="/dashboard" className="hover:text-primary">Dashboard</Link>
+        <Link to="/referral" className="hover:text-primary">Referral</Link>
+        <Link to="/leaderboard" className="hover:text-primary">Leaderboard</Link>
+      </div>
+    </nav>
+  );
+}
 
-        .card {
-            background: var(--card);
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 400px;
-            width: 100%;
-            margin: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,215,0,0.1);
-        }
+// ==================== Home Component ====================
+function Home() {
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      symbols: [
+        { proName: "BINANCE:BTCUSDT", title: "BTC/USDT" },
+        { proName: "BINANCE:ETHUSDT", title: "ETH/USDT" },
+        { proName: "BINANCE:BNBUSDT", title: "BNB/USDT" }
+      ],
+      colorTheme: "dark",
+      isTransparent: false,
+      displayMode: "adaptive",
+      locale: "en"
+    });
+    document.getElementById("tradingview-widget")?.appendChild(script);
+  }, []);
 
-        .card h2 {
-            color: var(--primary);
-            text-align: center;
-            margin-bottom: 20px;
-        }
+  return (
+    <div className="bg-bg min-h-screen text-white">
+      <div className="flex flex-col items-center justify-center text-center py-20 animate-fadeIn">
+        <h1 className="text-5xl font-bold text-primary">Hakim AI Arbitrage Bot</h1>
+        <p className="mt-4 text-textGray max-w-xl">
+          Trade smarter with AI powered arbitrage bots. Earn daily profits while you sleep 🚀
+        </p>
+        <button className="mt-6 px-6 py-3 bg-primary text-black rounded-lg font-bold hover:scale-105 transition">
+          Get Started
+        </button>
+      </div>
+      <div id="tradingview-widget" className="mt-10"></div>
+      <div className="grid md:grid-cols-3 gap-6 p-10">
+        <div className="bg-card p-6 rounded-xl shadow-lg text-center hover:scale-105 transition">
+          <h3 className="text-xl text-primary">🤖 Real Bots</h3>
+          <p className="text-textGray mt-2">Automated arbitrage bots running 24/7 across multiple exchanges.</p>
+        </div>
+        <div className="bg-card p-6 rounded-xl shadow-lg text-center hover:scale-105 transition">
+          <h3 className="text-xl text-primary">📈 Live Trading</h3>
+          <p className="text-textGray mt-2">Monitor trades in real-time with integrated TradingView charts.</p>
+        </div>
+        <div className="bg-card p-6 rounded-xl shadow-lg text-center hover:scale-105 transition">
+          <h3 className="text-xl text-primary">💬 Live Chat Assist</h3>
+          <p className="text-textGray mt-2">Get instant support from our AI assistant and live agents.</p>
+        </div>
+      </div>
+      <div className="bg-red-900 text-white p-6 rounded-xl mx-10 mt-10 text-center">
+        <h3 className="text-xl font-bold">⚠️ Important Deposit Notice</h3>
+        <p className="mt-2">Please double-check your deposit address before sending funds. If you send to the wrong address, we cannot recover your money.</p>
+      </div>
+    </div>
+  );
+}
 
-        .input-field {
-            width: 100%;
-            padding: 14px;
-            margin: 10px 0;
-            background: #0a0c10;
-            border: 1px solid #2a2e38;
-            color: white;
-            border-radius: 10px;
+// ==================== Pricing Component ====================
+function Pricing() {
+  const plans = [
+    { name: "Nano Bot", price: 29.99, daily: 1.0, validity: "5 Years" },
+    { name: "Swift Bot", price: 59.99, daily: 2.0, validity: "5 Years" },
+    { name: "Alpha Bot", price: 99.99, daily: 3.5, validity: "5 Years" },
+    { name: "Matrix Bot", price: 299.99, daily: 10.5, validity: "5 Years" },
+    { name: "Titan Bot", price: 399.99, daily: 14.5, validity: "5 Years" },
+    { name: "Oracle Bot", price: 499.99, daily: 18.5, validity: "5 Years" },
+    { name: "Legend Bot", price: 599.99, daily: 23.0, validity: "5 Years" }
+  ];
+
+  return (
+    <div className="bg-bg min-h-screen text-white p-8">
+      <h2 className="text-primary text-4xl text-center mb-10">🚀 AI Bot Pricing</h2>
+      <div className="grid md:grid-cols-3 gap-6">
+        {plans.map((plan, idx) => (
+          <div key={idx} className="bg-card p-6 rounded-xl shadow-lg text-center hover:scale-105 transition">
+            <h3 className="text-xl text-primary font-bold">{plan.name}</h3>
+            <p className="text-3xl font-bold mt-2">${plan.price}</p>
+            <p className="text-textGray">Daily Profit: ${plan.daily}</p>
+            <p className="text-textGray text-sm">Validity: {plan.validity}</p>
+            <button className="mt-4 px-4 py-2 bg-primary text-black rounded-lg font-bold">Select Bot</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ==================== FAQ Component ====================
+function FAQ() {
+  const [open, setOpen] = useState(null);
+  const faqs = [
+    { q: "How does the AI bot work?", a: "Our AI scans exchanges for price differences and executes arbitrage trades automatically." },
+    { q: "Is my money safe?", a: "Yes, funds are stored in secured wallets and all transactions are verified on blockchain." },
+    { q: "What is the minimum deposit?", a: "Minimum deposit is $30 USDT via BEP20 network." },
+    { q: "How long do withdrawals take?", a: "Withdrawals are processed within 24 hours after admin approval." }
+  ];
+
+  return (
+    <div className="bg-bg min-h-screen text-white p-8">
+      <h2 className="text-primary text-4xl text-center mb-10">❓ FAQ</h2>
+      <div className="max-w-3xl mx-auto space-y-4">
+        {faqs.map((faq, idx) => (
+          <div key={idx} className="bg-card p-4 rounded-xl cursor-pointer" onClick={() => setOpen(open === idx ? null : idx)}>
+            <h3 className="text-primary font-bold flex justify-between">{faq.q} <span>{open === idx ? "▲" : "▼"}</span></h3>
+            {open === idx && <p className="mt-2 text-textGray">{faq.a}</p>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ==================== Terms Component ====================
+function Terms() {
+  return (
+    <div className="bg-bg min-h-screen text-white p-8">
+      <div className="max-w-4xl mx-auto bg-card p-8 rounded-xl">
+        <h2 className="text-primary text-3xl mb-6">📜 Terms & Conditions</h2>
+        <ul className="list-disc list-inside space-y-3 text-textGray">
+          <li>One account per user — no multiple accounts allowed.</li>
+          <li>Minimum deposit: $30 USDT (BEP20).</li>
+          <li>Withdrawals take up to 24 hours to process.</li>
+          <li>All deposits are final — no refunds after confirmation.</li>
+          <li>KYC may be required for withdrawals over $1000.</li>
+          <li>We are not responsible for user errors (wrong address, wrong network).</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// ==================== Dashboard Component ====================
+function Dashboard() {
+  const user = {
+    name: "Shueb",
+    balance: 1240.5,
+    trc20Address: "TK6rVADXttcYhbzgyd1bRUmHCcwkrfm6m9",
+    bep20Address: "0x9cecaca8d1e50788c7842e1f39af1ac56821d62d",
+    rank: "TRAINEE"
+  };
+
+  return (
+    <div className="bg-bg min-h-screen text-white p-8">
+      <h2 className="text-primary text-3xl">Welcome, {user.name}</h2>
+      <div className="grid md:grid-cols-2 gap-6 mt-6">
+        <div className="bg-card p-6 rounded-xl"><h3 className="text-xl text-primary">💰 Balance</h3><p className="text-3xl font-bold">${user.balance} USDT</p></div>
+        <div className="bg-card p-6 rounded-xl"><h3 className="text-xl text-primary">🏆 Rank</h3><p className="text-2xl font-bold">{user.rank}</p></div>
+        <div className="bg-card p-6 rounded-xl"><h3 className="text-xl text-primary">📈 Total Profit</h3><p className="text-3xl font-bold text-green-400">+$0.00</p></div>
+        <div className="bg-card p-6 rounded-xl"><h3 className="text-xl text-primary">🤖 Active Bot</h3><p className="text-2xl">None</p></div>
+      </div>
+      <div className="mt-8 bg-card p-6 rounded-xl">
+        <h3 className="text-xl text-primary">📥 Deposit Addresses</h3>
+        <p className="mt-2 text-textGray">TRC20: {user.trc20Address}</p>
+        <p className="mt-1 text-textGray">BEP20: {user.bep20Address}</p>
+      </div>
+    </div>
+  );
+}
+
+// ==================== Referral Component ====================
+function Referral() {
+  const user = {
+    referralLink: "https://hakim-arbitrage-v8.vercel.app?ref=HAKIM1234",
+    referralCount: 5,
+    referralEarnings: 120
+  };
+
+  return (
+    <div className="bg-bg min-h-screen text-white p-8">
+      <h2 className="text-primary text-3xl mb-6">👥 Invite Friends</h2>
+      <div className="bg-card p-6 rounded-xl text-center">
+        <h3 className="text-xl text-primary">Your Referral Link</h3>
+        <p className="mt-2 text-sm break-all">{user.referralLink}</p>
+        <button className="mt-4 px-4 py-2 bg-primary text-black rounded-lg font-bold" onClick={() => { navigator.clipboard.writeText(user.referralLink); alert("Referral link copied!"); }}>
+          Copy Link
+        </button>
+      </div>
+      <div className="mt-6 bg-card p-6 rounded-xl">
+        <h3 className="text-xl text-primary">📊 Referral Stats</h3>
+        <p>Total Referrals: {user.referralCount}</p>
+        <p>Total Earnings: ${user.referralEarnings}</p>
+      </div>
+    </div>
+  );
+}
+
+// ==================== Leaderboard Component ====================
+function Leaderboard() {
+  const user = { rank: "TRAINEE", referralCount: 5, referralEarnings: 120 };
+  const ranks = [
+    { name: "SILVER", salary: 400, requirement: "20 Direct Referrals", progress: 45 },
+    { name: "GOLD", salary: 1000, requirement: "5 Silver Leaders", progress: 20 },
+    { name: "DIAMOND", salary: 2000, requirement: "10 Gold Leaders", progress: 10 },
+    { name: "MANAGER", salary: 5000, requirement: "5 Diamond Leaders", progress: 0 }
+  ];
+
+  return (
+    <div className="bg-bg min-h-screen text-white p-8">
+      <h2 className="text-primary text-3xl text-center mb-10">🏆 Leadership Board</h2>
+      <div className="grid md:grid-cols-2 gap-6">
+        {ranks.map((rank, idx) => (
+          <div key={idx} className="bg-card p-6 rounded-xl text-center">
+            <h3 className="text-2xl text-primary">{rank.name}</h3>
+            <p className="text-xl font-bold mt-2">${rank.salary}/month</p>
+            <p className="text-textGray text-sm">{rank.requirement}</p>
+            <div className="w-full bg-gray-700 rounded-full h-2.5 mt-3"><div className="bg-primary h-2.5 rounded-full" style={{ width: `${rank.progress}%` }}></div></div>
+            <p className="text-textGray text-xs mt-1">Progress: {rank.progress}%</p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-8 bg-card p-6 rounded-xl text-center">
+        <h3 className="text-primary text-xl">Your Rank</h3>
+        <p className="text-2xl font-bold mt-2">{user.rank}</p>
+        <p>Referrals: {user.referralCount}</p>
+        <p>Team Earnings: ${user.referralEarnings}</p>
+      </div>
+    </div>
+  );
+}
+
+// ==================== LiveChat Component ====================
+function LiveChat() {
+  const [message, setMessage] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+
+  const sendMessage = async () => {
+    if (!message.trim()) return;
+    alert("✅ Message sent to support!");
+    setMessage("");
+  };
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50">
+      {!isOpen && (
+        <button onClick={() => setIsOpen(true)} className="bg-primary text-black p-4 rounded-full shadow-lg hover:scale-105 transition">💬</button>
+      )}
+      {isOpen && (
+        <div className="bg-card p-4 rounded-xl shadow-lg w-80">
+          <div className="flex justify-between items-center">
+            <h3 className="text-primary font-bold">Live Chat Assist</h3>
+            <button onClick={() => setIsOpen(false)} className="text-textGray">✕</button>
+          </div>
+          <textarea className="w-full p-2 mt-2 rounded bg-bg text-white border border-gray-700" rows="3" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Type your message..." />
+          <button onClick={sendMessage} className="mt-2 w-full px-4 py-2 bg-primary text-black rounded-lg font-bold">Send</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ==================== MAIN APP ====================
+function App() {
+  return (
+    <Router>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/referral" element={<Referral />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+      </Routes>
+      <LiveChat />
+    </Router>
+  );
+}
+
+export default App;
             box-sizing: border-box;
             font-size: 14px;
         }
