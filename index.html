@@ -1,25 +1,26 @@
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
 
-// ==================== Navbar Component ====================
+// ==================== 1. NAVBAR ====================
 function Navbar() {
   return (
-    <nav className="bg-bg text-white p-4 flex justify-between items-center flex-wrap gap-4">
-      <h1 className="text-primary font-bold text-2xl">Hakim AI</h1>
+    <nav className="bg-gray-900 text-white p-4 flex justify-between shadow-lg flex-wrap gap-4">
+      <h1 className="text-yellow-400 font-bold text-xl">Hakim AI</h1>
       <div className="space-x-4 text-sm">
-        <Link to="/" className="hover:text-primary">Home</Link>
-        <Link to="/pricing" className="hover:text-primary">Pricing</Link>
-        <Link to="/faq" className="hover:text-primary">FAQ</Link>
-        <Link to="/terms" className="hover:text-primary">Terms</Link>
-        <Link to="/dashboard" className="hover:text-primary">Dashboard</Link>
-        <Link to="/referral" className="hover:text-primary">Referral</Link>
-        <Link to="/leaderboard" className="hover:text-primary">Leaderboard</Link>
+        <Link to="/" className="hover:text-yellow-400">Home</Link>
+        <Link to="/pricing" className="hover:text-yellow-400">Pricing</Link>
+        <Link to="/faq" className="hover:text-yellow-400">FAQ</Link>
+        <Link to="/terms" className="hover:text-yellow-400">Terms</Link>
+        <Link to="/dashboard" className="hover:text-yellow-400">Dashboard</Link>
+        <Link to="/referral" className="hover:text-yellow-400">Referral</Link>
+        <Link to="/leaderboard" className="hover:text-yellow-400">Leaderboard</Link>
+        <Link to="/history" className="hover:text-yellow-400">History</Link>
       </div>
     </nav>
   );
 }
 
-// ==================== Home Component ====================
+// ==================== 2. HOME ====================
 function Home() {
   useEffect(() => {
     const script = document.createElement("script");
@@ -40,70 +41,104 @@ function Home() {
   }, []);
 
   return (
-    <div className="bg-bg min-h-screen text-white">
-      <div className="flex flex-col items-center justify-center text-center py-20 animate-fadeIn">
-        <h1 className="text-5xl font-bold text-primary">Hakim AI Arbitrage Bot</h1>
-        <p className="mt-4 text-textGray max-w-xl">
-          Trade smarter with AI powered arbitrage bots. Earn daily profits while you sleep 🚀
-        </p>
-        <button className="mt-6 px-6 py-3 bg-primary text-black rounded-lg font-bold hover:scale-105 transition">
-          Get Started
-        </button>
-      </div>
+    <div className="bg-gradient-to-r from-gray-900 via-black to-gray-800 min-h-screen text-white">
+      <section className="text-center py-20">
+        <h1 className="text-5xl font-bold text-yellow-400">Hakim AI Arbitrage Bot</h1>
+        <p className="mt-4 text-gray-300 max-w-xl mx-auto">Trade smarter with AI powered arbitrage bots. Earn daily profits while you sleep 🚀</p>
+        <button className="mt-6 px-6 py-3 bg-yellow-400 text-black rounded-lg font-bold hover:scale-105 transition">Get Started</button>
+      </section>
       <div id="tradingview-widget" className="mt-10"></div>
       <div className="grid md:grid-cols-3 gap-6 p-10">
-        <div className="bg-card p-6 rounded-xl shadow-lg text-center hover:scale-105 transition">
-          <h3 className="text-xl text-primary">🤖 Real Bots</h3>
-          <p className="text-textGray mt-2">Automated arbitrage bots running 24/7 across multiple exchanges.</p>
-        </div>
-        <div className="bg-card p-6 rounded-xl shadow-lg text-center hover:scale-105 transition">
-          <h3 className="text-xl text-primary">📈 Live Trading</h3>
-          <p className="text-textGray mt-2">Monitor trades in real-time with integrated TradingView charts.</p>
-        </div>
-        <div className="bg-card p-6 rounded-xl shadow-lg text-center hover:scale-105 transition">
-          <h3 className="text-xl text-primary">💬 Live Chat Assist</h3>
-          <p className="text-textGray mt-2">Get instant support from our AI assistant and live agents.</p>
-        </div>
+        <div className="bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:scale-105 transition"><h3 className="text-xl text-yellow-400">🤖 Real Bots</h3><p className="text-gray-300 mt-2">Automated arbitrage bots running 24/7.</p></div>
+        <div className="bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:scale-105 transition"><h3 className="text-xl text-yellow-400">📈 Live Trading</h3><p className="text-gray-300 mt-2">Monitor trades in real-time with TradingView charts.</p></div>
+        <div className="bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:scale-105 transition"><h3 className="text-xl text-yellow-400">💬 Live Chat Assist</h3><p className="text-gray-300 mt-2">Get instant support from AI and live agents.</p></div>
       </div>
-      <div className="bg-red-900 text-white p-6 rounded-xl mx-10 mt-10 text-center">
-        <h3 className="text-xl font-bold">⚠️ Important Deposit Notice</h3>
-        <p className="mt-2">Please double-check your deposit address before sending funds. If you send to the wrong address, we cannot recover your money.</p>
-      </div>
+      <div className="bg-red-900 text-white p-6 rounded-xl mx-10 mt-10 text-center"><h3 className="text-xl font-bold">⚠️ Important Deposit Notice</h3><p className="mt-2">Please double-check your deposit address before sending funds. If you send to the wrong address, we cannot recover your money.</p></div>
     </div>
   );
 }
 
-// ==================== Pricing Component ====================
-function Pricing() {
-  const plans = [
-    { name: "Nano Bot", price: 29.99, daily: 1.0, validity: "5 Years" },
-    { name: "Swift Bot", price: 59.99, daily: 2.0, validity: "5 Years" },
-    { name: "Alpha Bot", price: 99.99, daily: 3.5, validity: "5 Years" },
-    { name: "Matrix Bot", price: 299.99, daily: 10.5, validity: "5 Years" },
-    { name: "Titan Bot", price: 399.99, daily: 14.5, validity: "5 Years" },
-    { name: "Oracle Bot", price: 499.99, daily: 18.5, validity: "5 Years" },
-    { name: "Legend Bot", price: 599.99, daily: 23.0, validity: "5 Years" }
-  ];
+// ==================== 3. DASHBOARD ====================
+function Dashboard({ user }) {
+  const [emailCode, setEmailCode] = useState("");
+  const [googleCode, setGoogleCode] = useState("");
+  const [announcements, setAnnouncements] = useState([]);
+
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const res = await fetch("https://hakim-arbitrage-v8.up.railway.app/api/announcements");
+        const data = await res.json();
+        setAnnouncements(data.announcements || []);
+      } catch (err) { console.error(err); }
+    };
+    fetchAnnouncements();
+  }, []);
+
+  const handleWithdraw = async () => { alert("Withdrawal request submitted! Check your email for verification code."); };
 
   return (
-    <div className="bg-bg min-h-screen text-white p-8">
-      <h2 className="text-primary text-4xl text-center mb-10">🚀 AI Bot Pricing</h2>
-      <div className="grid md:grid-cols-3 gap-6">
-        {plans.map((plan, idx) => (
-          <div key={idx} className="bg-card p-6 rounded-xl shadow-lg text-center hover:scale-105 transition">
-            <h3 className="text-xl text-primary font-bold">{plan.name}</h3>
-            <p className="text-3xl font-bold mt-2">${plan.price}</p>
-            <p className="text-textGray">Daily Profit: ${plan.daily}</p>
-            <p className="text-textGray text-sm">Validity: {plan.validity}</p>
-            <button className="mt-4 px-4 py-2 bg-primary text-black rounded-lg font-bold">Select Bot</button>
-          </div>
-        ))}
-      </div>
+    <div className="bg-gradient-to-r from-gray-900 via-black to-gray-800 min-h-screen text-white p-8">
+      <div className="bg-gradient-to-r from-yellow-500 to-yellow-700 p-6 rounded-2xl shadow-2xl text-center"><h2 className="text-black text-2xl font-bold">💰 Welcome, {user.name}</h2><p className="text-4xl mt-4 font-extrabold">${user.balance.toFixed(2)} USDT</p></div>
+      <div className="bg-gray-900 p-6 rounded-2xl shadow-lg mt-8"><h3 className="text-xl text-yellow-400">📥 Deposit</h3><p className="mt-2 break-all">TRC20: {user.trc20Address}</p><p className="break-all">BEP20: {user.bep20Address}</p><p className="text-red-400 mt-2 text-sm">⚠️ Double-check your deposit address. Wrong deposits cannot be recovered.</p></div>
+      <div className="bg-gray-900 p-6 rounded-2xl shadow-lg mt-8"><h3 className="text-xl text-yellow-400">📤 Withdraw</h3><input className="w-full p-2 mt-4 rounded bg-black text-white border border-yellow-400" placeholder="Enter Email Code (6 digits)" value={emailCode} onChange={(e) => setEmailCode(e.target.value)} /><input className="w-full p-2 mt-4 rounded bg-black text-white border border-yellow-400" placeholder="Enter Google Authenticator Code" value={googleCode} onChange={(e) => setGoogleCode(e.target.value)} /><button className="mt-4 px-6 py-3 bg-yellow-500 text-black rounded-lg font-bold hover:scale-105 transition" onClick={handleWithdraw}>Confirm Withdrawal</button></div>
+      <div className="bg-gray-900 p-6 rounded-2xl shadow-lg mt-8 text-center"><h3 className="text-xl text-yellow-400">👥 Referral Program</h3><p className="mt-2">Your referral link:</p><p className="text-sm text-yellow-300 break-all">{user.referralLink}</p><button className="mt-2 px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold" onClick={() => { navigator.clipboard.writeText(user.referralLink); alert("Referral link copied!"); }}>Copy Link</button></div>
+      <div className="bg-gray-900 p-6 rounded-2xl shadow-lg mt-8"><h3 className="text-xl text-yellow-400">📢 Announcements</h3>{announcements.length > 0 ? announcements.map((a, i) => (<div key={i} className="mt-4 p-4 bg-black rounded-lg shadow-md"><h4 className="text-lg text-yellow-300">{a.title}</h4><p className="text-sm text-gray-300">{a.message}</p>{a.image && <img src={a.image} alt="Announcement" className="mt-2 rounded-lg shadow-lg" />}</div>)) : <p className="text-gray-400">No announcements yet.</p>}</div>
+      <div className="bg-gray-900 p-6 rounded-2xl shadow-lg mt-8 text-center"><h3 className="text-xl text-yellow-400">🤖 AI Bots</h3><p className="text-gray-300 mt-2">Meet our advanced arbitrage mining bots working 24/7</p><div className="grid md:grid-cols-3 gap-6 mt-4"><div className="bg-gray-800 p-4 rounded-xl"><div className="h-32 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center text-4xl">🤖</div><p className="mt-2">Nano Bot</p></div><div className="bg-gray-800 p-4 rounded-xl"><div className="h-32 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-4xl">⚡</div><p className="mt-2">Alpha Bot</p></div><div className="bg-gray-800 p-4 rounded-xl"><div className="h-32 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center text-4xl">🐉</div><p className="mt-2">Legend Bot</p></div></div></div>
     </div>
   );
 }
 
-// ==================== FAQ Component ====================
+// ==================== 4. REFERRAL ====================
+function Referral({ user }) {
+  return (
+    <div className="bg-gray-900 min-h-screen text-white p-8">
+      <h2 className="text-yellow-400 text-3xl mb-6">👥 Invite Friends</h2>
+      <p className="mb-4">Earn commissions when your friends rent bots!</p>
+      <div className="bg-gray-800 p-6 rounded-xl shadow-lg text-center"><h3 className="text-xl text-yellow-400">Your Referral Link</h3><p className="mt-2 text-sm break-all">{user.referralLink}</p><button className="mt-4 px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold" onClick={() => { navigator.clipboard.writeText(user.referralLink); alert("Referral link copied!"); }}>Copy Link</button></div>
+      <div className="mt-6 bg-gray-800 p-6 rounded-xl"><h3 className="text-xl text-yellow-400">📊 Referral Stats</h3><p>Total Referrals: {user.referralCount || 0}</p><p>Total Earnings: ${user.referralEarnings || 0}</p></div>
+    </div>
+  );
+}
+
+// ==================== 5. LEADERBOARD ====================
+function Leaderboard({ user }) {
+  const rankData = {
+    TRAINEE: { directCommission: 5, indirectCommission: 0, salary: 0, requirement: "Keen 5 qof ama kireyso $100 bot" },
+    SILVER: { directCommission: 10, indirectCommission: 2, salary: 400, requirement: "20 Direct Referrals ama $2000 volume" },
+    GOLD: { directCommission: 12, indirectCommission: 3, salary: 1000, requirement: "5 Silver Leaders in your team" },
+    DIAMOND: { directCommission: 15, indirectCommission: 5, salary: 2000, requirement: "10 Gold Leaders in your team" },
+    MANAGER: { directCommission: 20, indirectCommission: 10, salary: 5000, requirement: "5 Diamond Leaders + Office" }
+  };
+  const rank = user.rank || "TRAINEE";
+  return (
+    <div className="bg-gray-900 min-h-screen text-white p-8">
+      <h2 className="text-yellow-400 text-3xl text-center mb-10">🏆 Leadership Board</h2><div className="grid md:grid-cols-2 gap-6">{Object.entries(rankData).map(([r, data]) => (<div key={r} className="bg-gray-800 p-6 rounded-xl text-center"><h3 className="text-2xl text-yellow-400">{r}</h3><p className="text-xl font-bold mt-2">${data.salary}/month</p><p className="text-gray-400 text-sm">{data.requirement}</p><div className="w-full bg-gray-700 rounded-full h-2.5 mt-3"><div className="bg-yellow-400 h-2.5 rounded-full" style={{ width: r === rank ? "45%" : "0%" }}></div></div></div>))}</div>
+      <div className="mt-8 bg-gray-800 p-6 rounded-xl text-center"><h3 className="text-yellow-400 text-xl">Your Rank</h3><p className="text-2xl font-bold mt-2">{rank}</p><p>Direct Commission: {rankData[rank].directCommission}%</p><p>Indirect Commission: {rankData[rank].indirectCommission}%</p><p>Salary: ${rankData[rank].salary}/month</p></div>
+    </div>
+  );
+}
+
+// ==================== 6. PRICING ====================
+function Pricing() {
+  const plans = [
+    { name: "Nano Bot", price: 29.99, daily: 1, monthly: 30, reward: 2 },
+    { name: "Swift Bot", price: 59.99, daily: 2, monthly: 60, reward: 4 },
+    { name: "Alpha Bot", price: 99.99, daily: 3.5, monthly: 105, reward: 7 },
+    { name: "Matrix Bot", price: 299.99, daily: 10.5, monthly: 315, reward: 20 },
+    { name: "Titan Bot", price: 399.99, daily: 14.5, monthly: 435, reward: 28 },
+    { name: "Oracle Bot", price: 499.99, daily: 18.5, monthly: 555, reward: 35 },
+    { name: "Legend Bot", price: 599.99, daily: 23, monthly: 690, reward: 45 }
+  ];
+  return (
+    <div className="bg-gray-900 min-h-screen text-white p-8">
+      <h2 className="text-yellow-400 text-3xl mb-6">🚀 AI Bot Pricing</h2>
+      <div className="grid md:grid-cols-3 gap-6">{plans.map((plan, idx) => (<div key={idx} className="bg-gray-800 p-6 rounded-xl shadow-lg hover:scale-105 transition text-center"><h3 className="text-xl text-yellow-400 font-bold">{plan.name}</h3><p className="text-3xl font-bold mt-2">${plan.price}</p><p className="text-gray-400">Daily Profit: ${plan.daily}</p><p className="text-gray-400">Monthly: ${plan.monthly}</p><p className="text-gray-400 text-sm">Referral Reward: ${plan.reward}</p><button className="mt-4 px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold">Rent Now</button></div>))}</div>
+    </div>
+  );
+}
+
+// ==================== 7. FAQ ====================
 function FAQ() {
   const [open, setOpen] = useState(null);
   const faqs = [
@@ -112,416 +147,121 @@ function FAQ() {
     { q: "What is the minimum deposit?", a: "Minimum deposit is $30 USDT via BEP20 network." },
     { q: "How long do withdrawals take?", a: "Withdrawals are processed within 24 hours after admin approval." }
   ];
-
   return (
-    <div className="bg-bg min-h-screen text-white p-8">
-      <h2 className="text-primary text-4xl text-center mb-10">❓ FAQ</h2>
-      <div className="max-w-3xl mx-auto space-y-4">
-        {faqs.map((faq, idx) => (
-          <div key={idx} className="bg-card p-4 rounded-xl cursor-pointer" onClick={() => setOpen(open === idx ? null : idx)}>
-            <h3 className="text-primary font-bold flex justify-between">{faq.q} <span>{open === idx ? "▲" : "▼"}</span></h3>
-            {open === idx && <p className="mt-2 text-textGray">{faq.a}</p>}
-          </div>
-        ))}
-      </div>
+    <div className="bg-gray-900 min-h-screen text-white p-8">
+      <h2 className="text-yellow-400 text-3xl text-center mb-10">❓ FAQ</h2>
+      <div className="max-w-3xl mx-auto space-y-4">{faqs.map((faq, idx) => (<div key={idx} className="bg-gray-800 p-4 rounded-xl cursor-pointer" onClick={() => setOpen(open === idx ? null : idx)}><h3 className="text-yellow-400 font-bold flex justify-between">{faq.q}<span>{open === idx ? "▲" : "▼"}</span></h3>{open === idx && <p className="mt-2 text-gray-300">{faq.a}</p>}</div>))}</div>
     </div>
   );
 }
 
-// ==================== Terms Component ====================
+// ==================== 8. TERMS ====================
 function Terms() {
   return (
-    <div className="bg-bg min-h-screen text-white p-8">
-      <div className="max-w-4xl mx-auto bg-card p-8 rounded-xl">
-        <h2 className="text-primary text-3xl mb-6">📜 Terms & Conditions</h2>
-        <ul className="list-disc list-inside space-y-3 text-textGray">
+    <div className="bg-gray-900 min-h-screen text-white p-8">
+      <div className="max-w-4xl mx-auto bg-gray-800 p-8 rounded-xl">
+        <h2 className="text-yellow-400 text-3xl mb-6">📜 Terms & Conditions</h2>
+        <ul className="list-disc list-inside space-y-3 text-gray-300">
           <li>One account per user — no multiple accounts allowed.</li>
           <li>Minimum deposit: $30 USDT (BEP20).</li>
           <li>Withdrawals take up to 24 hours to process.</li>
           <li>All deposits are final — no refunds after confirmation.</li>
           <li>KYC may be required for withdrawals over $1000.</li>
           <li>We are not responsible for user errors (wrong address, wrong network).</li>
+          <li className="text-yellow-400">⚠️ Risk Disclaimer: Trading involves risk. Hakim AI does not guarantee profits.</li>
         </ul>
       </div>
     </div>
   );
 }
 
-// ==================== Dashboard Component ====================
-function Dashboard() {
-  const user = {
-    name: "Shueb",
-    balance: 1240.5,
-    trc20Address: "TK6rVADXttcYhbzgyd1bRUmHCcwkrfm6m9",
-    bep20Address: "0x9cecaca8d1e50788c7842e1f39af1ac56821d62d",
-    rank: "TRAINEE"
-  };
-
-  return (
-    <div className="bg-bg min-h-screen text-white p-8">
-      <h2 className="text-primary text-3xl">Welcome, {user.name}</h2>
-      <div className="grid md:grid-cols-2 gap-6 mt-6">
-        <div className="bg-card p-6 rounded-xl"><h3 className="text-xl text-primary">💰 Balance</h3><p className="text-3xl font-bold">${user.balance} USDT</p></div>
-        <div className="bg-card p-6 rounded-xl"><h3 className="text-xl text-primary">🏆 Rank</h3><p className="text-2xl font-bold">{user.rank}</p></div>
-        <div className="bg-card p-6 rounded-xl"><h3 className="text-xl text-primary">📈 Total Profit</h3><p className="text-3xl font-bold text-green-400">+$0.00</p></div>
-        <div className="bg-card p-6 rounded-xl"><h3 className="text-xl text-primary">🤖 Active Bot</h3><p className="text-2xl">None</p></div>
-      </div>
-      <div className="mt-8 bg-card p-6 rounded-xl">
-        <h3 className="text-xl text-primary">📥 Deposit Addresses</h3>
-        <p className="mt-2 text-textGray">TRC20: {user.trc20Address}</p>
-        <p className="mt-1 text-textGray">BEP20: {user.bep20Address}</p>
-      </div>
-    </div>
-  );
-}
-
-// ==================== Referral Component ====================
-function Referral() {
-  const user = {
-    referralLink: "https://hakim-arbitrage-v8.vercel.app?ref=HAKIM1234",
-    referralCount: 5,
-    referralEarnings: 120
-  };
-
-  return (
-    <div className="bg-bg min-h-screen text-white p-8">
-      <h2 className="text-primary text-3xl mb-6">👥 Invite Friends</h2>
-      <div className="bg-card p-6 rounded-xl text-center">
-        <h3 className="text-xl text-primary">Your Referral Link</h3>
-        <p className="mt-2 text-sm break-all">{user.referralLink}</p>
-        <button className="mt-4 px-4 py-2 bg-primary text-black rounded-lg font-bold" onClick={() => { navigator.clipboard.writeText(user.referralLink); alert("Referral link copied!"); }}>
-          Copy Link
-        </button>
-      </div>
-      <div className="mt-6 bg-card p-6 rounded-xl">
-        <h3 className="text-xl text-primary">📊 Referral Stats</h3>
-        <p>Total Referrals: {user.referralCount}</p>
-        <p>Total Earnings: ${user.referralEarnings}</p>
-      </div>
-    </div>
-  );
-}
-
-// ==================== Leaderboard Component ====================
-function Leaderboard() {
-  const user = { rank: "TRAINEE", referralCount: 5, referralEarnings: 120 };
-  const ranks = [
-    { name: "SILVER", salary: 400, requirement: "20 Direct Referrals", progress: 45 },
-    { name: "GOLD", salary: 1000, requirement: "5 Silver Leaders", progress: 20 },
-    { name: "DIAMOND", salary: 2000, requirement: "10 Gold Leaders", progress: 10 },
-    { name: "MANAGER", salary: 5000, requirement: "5 Diamond Leaders", progress: 0 }
-  ];
-
-  return (
-    <div className="bg-bg min-h-screen text-white p-8">
-      <h2 className="text-primary text-3xl text-center mb-10">🏆 Leadership Board</h2>
-      <div className="grid md:grid-cols-2 gap-6">
-        {ranks.map((rank, idx) => (
-          <div key={idx} className="bg-card p-6 rounded-xl text-center">
-            <h3 className="text-2xl text-primary">{rank.name}</h3>
-            <p className="text-xl font-bold mt-2">${rank.salary}/month</p>
-            <p className="text-textGray text-sm">{rank.requirement}</p>
-            <div className="w-full bg-gray-700 rounded-full h-2.5 mt-3"><div className="bg-primary h-2.5 rounded-full" style={{ width: `${rank.progress}%` }}></div></div>
-            <p className="text-textGray text-xs mt-1">Progress: {rank.progress}%</p>
-          </div>
-        ))}
-      </div>
-      <div className="mt-8 bg-card p-6 rounded-xl text-center">
-        <h3 className="text-primary text-xl">Your Rank</h3>
-        <p className="text-2xl font-bold mt-2">{user.rank}</p>
-        <p>Referrals: {user.referralCount}</p>
-        <p>Team Earnings: ${user.referralEarnings}</p>
-      </div>
-    </div>
-  );
-}
-
-// ==================== LiveChat Component ====================
+// ==================== 9. LIVE CHAT ====================
 function LiveChat() {
   const [message, setMessage] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-
-  const sendMessage = async () => {
-    if (!message.trim()) return;
-    alert("✅ Message sent to support!");
-    setMessage("");
-  };
-
+  const sendMessage = async () => { if (!message.trim()) return; alert("✅ Message sent to support! We will respond within 24 hours."); setMessage(""); };
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      {!isOpen && (
-        <button onClick={() => setIsOpen(true)} className="bg-primary text-black p-4 rounded-full shadow-lg hover:scale-105 transition">💬</button>
-      )}
-      {isOpen && (
-        <div className="bg-card p-4 rounded-xl shadow-lg w-80">
-          <div className="flex justify-between items-center">
-            <h3 className="text-primary font-bold">Live Chat Assist</h3>
-            <button onClick={() => setIsOpen(false)} className="text-textGray">✕</button>
-          </div>
-          <textarea className="w-full p-2 mt-2 rounded bg-bg text-white border border-gray-700" rows="3" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Type your message..." />
-          <button onClick={sendMessage} className="mt-2 w-full px-4 py-2 bg-primary text-black rounded-lg font-bold">Send</button>
-        </div>
-      )}
+      {!isOpen && (<button onClick={() => setIsOpen(true)} className="bg-yellow-400 text-black p-4 rounded-full shadow-lg hover:scale-105 transition text-2xl">💬</button>)}
+      {isOpen && (<div className="bg-gray-800 p-4 rounded-xl shadow-lg w-80"><div className="flex justify-between items-center"><h3 className="text-yellow-400 font-bold">Live Chat Assist</h3><button onClick={() => setIsOpen(false)} className="text-gray-400">✕</button></div><textarea className="w-full p-2 mt-2 rounded bg-black text-white border border-gray-700" rows="3" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Type your message..." /><button onClick={sendMessage} className="mt-2 w-full px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold">Send</button></div>)}
     </div>
   );
 }
 
-// ==================== MAIN APP ====================
+// ==================== 10. TRANSACTION HISTORY ====================
+function TransactionHistory({ userId }) {
+  const [transactions, setTransactions] = useState([]);
+  const [balance, setBalance] = useState(0);
+  const [filter, setFilter] = useState("all");
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch(`https://hakim-arbitrage-v8.up.railway.app/api/history/${userId}`);
+        const data = await res.json();
+        setTransactions(data.transactions || []);
+        setBalance(data.balance || 0);
+      } catch (err) { console.error(err); }
+    };
+    fetchHistory();
+  }, [userId]);
+  const filteredTransactions = transactions.filter(tx => filter === "all" ? true : tx.type === filter);
+  const exportCSV = () => {
+    const headers = ["Type", "Amount", "TXID", "Status", "Date"];
+    const rows = filteredTransactions.map(tx => [tx.type, tx.amount, tx.txid, tx.status, new Date(tx.createdAt).toLocaleString()]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].map(e => e.join(",")).join("\n");
+    const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", "transaction_history.csv"); link.click();
+  };
+  return (
+    <div className="bg-gray-900 min-h-screen text-white p-8">
+      <h2 className="text-yellow-400 text-3xl mb-6">📜 Transaction History</h2>
+      <p className="mb-4">Current Balance: <span className="text-yellow-300">${balance.toFixed(2)}</span></p>
+      <div className="flex gap-4 mb-6 flex-wrap">
+        <button className={`px-4 py-2 rounded-lg font-bold ${filter === "all" ? "bg-yellow-400 text-black" : "bg-gray-700 text-white"}`} onClick={() => setFilter("all")}>All</button>
+        <button className={`px-4 py-2 rounded-lg font-bold ${filter === "deposit" ? "bg-yellow-400 text-black" : "bg-gray-700 text-white"}`} onClick={() => setFilter("deposit")}>Deposits</button>
+        <button className={`px-4 py-2 rounded-lg font-bold ${filter === "withdraw" ? "bg-yellow-400 text-black" : "bg-gray-700 text-white"}`} onClick={() => setFilter("withdraw")}>Withdrawals</button>
+        <button className="px-4 py-2 rounded-lg font-bold bg-green-500 text-black hover:scale-105 transition" onClick={exportCSV}>Export CSV</button>
+      </div>
+      <div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead><tr className="bg-gray-800"><th className="p-2 text-yellow-400">Type</th><th className="p-2 text-yellow-400">Amount</th><th className="p-2 text-yellow-400">TXID</th><th className="p-2 text-yellow-400">Status</th><th className="p-2 text-yellow-400">Date</th></tr></thead><tbody>{filteredTransactions.map((tx, i) => (<tr key={i} className="border-b border-gray-700 hover:bg-gray-800"><td className="p-2 capitalize">{tx.type}</td><td className="p-2">${tx.amount}</td><td className="p-2 text-sm break-all">{tx.txid}</td><td className="p-2">{tx.status}</td><td className="p-2">{new Date(tx.createdAt).toLocaleString()}</td></tr>))}</tbody></table></div>
+    </div>
+  );
+}
+
+// ==================== 11. APP ====================
 function App() {
+  const dummyUser = {
+    name: "Shueb", email: "shueb@example.com", balance: 1240.5,
+    trc20Address: "TK6rVADXttcYhbzgyd1bRUmHCcwkrfm6m9",
+    bep20Address: "0x9cecaca8d1e50788c7842e1f39af1ac56821d62d",
+    referralLink: "https://hakim-arbitrage-v8.vercel.app?ref=HAKIM1234",
+    referralCount: 5, referralEarnings: 120, userId: "HK1234", rank: "TRAINEE"
+  };
   return (
     <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/referral" element={<Referral />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-      </Routes>
-      <LiveChat />
+      <div className="min-h-screen bg-gray-900">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/dashboard" element={<Dashboard user={dummyUser} />} />
+          <Route path="/referral" element={<Referral user={dummyUser} />} />
+          <Route path="/leaderboard" element={<Leaderboard user={dummyUser} />} />
+          <Route path="/history" element={<TransactionHistory userId={dummyUser.userId} />} />
+        </Routes>
+        <LiveChat />
+      </div>
     </Router>
   );
 }
 
+// ==================== 12. INDEX ====================
+// index.js waa: ReactDOM.render(<App />, document.getElementById('root'))
+
+// ==================== 13. INDEX.CSS ====================
+// @tailwind base; @tailwind components; @tailwind utilities; body { background-color: #111827; }
+
+// ==================== 14. TAILWIND.CONFIG.JS ====================
+// module.exports = { content: ["./src/**/*.{js,jsx,ts,tsx}"], theme: { extend: { colors: { primary: "#f3ba2f" } } }, plugins: [] }
+
 export default App;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-
-        .input-field:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(90deg, var(--primary), #ffaa00);
-            color: black;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(255,215,0,0.3);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        #balanceDisplay {
-            color: var(--primary);
-            font-size: 2.5rem;
-            margin: 15px 0;
-            text-align: center;
-        }
-
-        .switch-link {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 12px;
-            color: var(--text-gray);
-            cursor: pointer;
-        }
-
-        .switch-link span {
-            color: var(--primary);
-        }
-
-        hr {
-            border: 0.5px solid #2a2e38;
-            margin: 20px 0;
-        }
-
-        .info-text {
-            font-size: 11px;
-            color: var(--text-gray);
-            text-align: center;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- LOGIN/REGISTER BOX -->
-    <div id="authBox" class="card">
-        <h2 id="authTitle">🔐 Login to Hakim AI</h2>
-        <input type="email" id="email" class="input-field" placeholder="Email Address">
-        <input type="password" id="password" class="input-field" placeholder="Password">
-        <button class="btn" onclick="handleAuth()">Continue</button>
-        <div class="switch-link" onclick="toggleAuth()">
-            <span id="toggleText">Create new account</span>
-        </div>
-    </div>
-
-    <!-- DASHBOARD -->
-    <div id="dashboard" class="card hidden">
-        <h2>👋 Welcome, <span id="userName">User</span></h2>
-        <div id="balanceDisplay">$0.00 USDT</div>
-        <hr>
-        <h3 style="margin-bottom: 15px;">💰 Deposit Funds</h3>
-        <p style="font-size: 12px; color: var(--text-gray); margin-bottom: 10px;">Minimum deposit: <strong>$30 USDT (BEP20)</strong></p>
-        <input type="number" id="depAmount" class="input-field" placeholder="Amount (USDT)">
-        <button class="btn" id="depBtn" onclick="depositNow()">
-            <i class="fas fa-rocket"></i> Deposit with NOWPayments
-        </button>
-        <button class="btn btn-outline" onclick="logout()" style="margin-top: 15px;">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </button>
-        <div class="info-text">
-            <i class="fas fa-lock"></i> Secure payments powered by NOWPayments
-        </div>
-    </div>
-
-    <script>
-        const API_URL = "https://hakim-arbitrage-v8.up.railway.app";
-        let currentUser = null;
-        let isLogin = true;
-
-        function toggleAuth() {
-            isLogin = !isLogin;
-            const title = document.getElementById('authTitle');
-            const toggleText = document.getElementById('toggleText');
-            
-            if (isLogin) {
-                title.innerHTML = '🔐 Login to Hakim AI';
-                toggleText.innerHTML = 'Create new account';
-            } else {
-                title.innerHTML = '📝 Create Account';
-                toggleText.innerHTML = 'Back to Login';
-            }
-        }
-
-        async function handleAuth() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const name = email.split('@')[0];
-            
-            if (!email || !password) {
-                alert('Please enter email and password');
-                return;
-            }
-            
-            const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-            
-            try {
-                const res = await fetch(API_URL + endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    if (isLogin) {
-                        currentUser = data.user;
-                        showDashboard();
-                    } else {
-                        alert('✅ Account created! Please login.');
-                        toggleAuth();
-                        document.getElementById('password').value = '';
-                    }
-                } else {
-                    alert(data.message || 'Authentication failed');
-                }
-            } catch (err) {
-                alert('Error connecting to server');
-            }
-        }
-
-        function showDashboard() {
-            document.getElementById('authBox').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('userName').innerText = currentUser.name;
-            document.getElementById('balanceDisplay').innerText = `$${currentUser.balance.toFixed(2)} USDT`;
-        }
-
-        async function depositNow() {
-            if (!currentUser) {
-                alert('Please login first');
-                return;
-            }
-            
-            const amount = parseFloat(document.getElementById('depAmount').value);
-            
-            if (!amount || amount < 30) {
-                alert('Minimum deposit is $30 USDT');
-                return;
-            }
-            
-            const btn = document.getElementById('depBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-            btn.disabled = true;
-            
-            try {
-                const res = await fetch(API_URL + '/api/create-payment', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount, userId: currentUser._id })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success && data.payment_url) {
-                    window.open(data.payment_url, '_blank');
-                    alert(`✅ Payment created! Complete payment in the new window.\n\nAmount: $${amount}\n\nFunds will be auto-credited after confirmation.`);
-                    document.getElementById('depAmount').value = '';
-                } else {
-                    alert('❌ Failed to create payment: ' + (data.error || 'Unknown error'));
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Error connecting to payment gateway');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-
-        async function refreshBalance() {
-            if (!currentUser) return;
-            try {
-                const res = await fetch(`${API_URL}/api/user/${currentUser._id}`);
-                const data = await res.json();
-                if (data.success) {
-                    currentUser.balance = data.user.balance;
-                    document.getElementById('balanceDisplay').innerText = `$${currentUser.balance.toFixed(2)} USDT`;
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        function logout() {
-            currentUser = null;
-            document.getElementById('dashboard').classList.add('hidden');
-            document.getElementById('authBox').classList.remove('hidden');
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
-            document.getElementById('depAmount').value = '';
-        }
-
-        // Refresh balance every 10 seconds if logged in
-        setInterval(() => {
-            if (currentUser) refreshBalance();
-        }, 10000);
-    </script>
-</body>
-</html>
