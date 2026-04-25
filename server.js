@@ -8,13 +8,12 @@ const path = require('path');
 
 const app = express();
 
-// ===== CORS FIX - THIS IS THE IMPORTANT PART =====
+// ===== CORS FIX =====
 app.use(cors({
     origin: '*',
     credentials: true
 }));
 
-// Additional CORS headers for all routes
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -37,7 +36,7 @@ mongoose.connect(MONGO_URL)
     .then(() => console.log('✅ MongoDB Connected Successfully!'))
     .catch(err => console.log('❌ MongoDB Error:', err.message));
 
-// User Schema
+// ===== NEW USER SCHEMA =====
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -47,6 +46,12 @@ const userSchema = new mongoose.Schema({
     depositAddress: { type: String, unique: true },
     totalDeposit: { type: Number, default: 0 },
     botPlan: { type: String, default: null },
+    pendingDeposits: [{
+        txid: String,
+        amount: Number,
+        status: { type: String, default: 'pending' },
+        createdAt: { type: Date, default: Date.now }
+    }],
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -66,14 +71,14 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// REGISTER API
-app.post('/api/register', async (req, res) => {
+// ===== NEW REGISTER API =====
+app.post('/api/auth/register', async (req, res) => {
     try {
         const { name, email, password } = req.body;
         
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ error: 'Email already exists!' });
+            return res.status(400).json({ message: 'Email already exists!' });
         }
         
         const hashedPass = await bcrypt.hash(password, 10);
@@ -85,7 +90,8 @@ app.post('/api/register', async (req, res) => {
             email,
             password: hashedPass,
             userId,
-            depositAddress
+            depositAddress,
+            balance: 0
         });
         
         await newUser.save();
@@ -95,53 +101,50 @@ app.post('/api/register', async (req, res) => {
             await transporter.sendMail({
                 from: 'pannyshp@gmail.com',
                 to: email,
-                subject: 'Welcome to HakimArbitrage PRO! 🚀',
+                subject: 'Welcome to HAKIM AI! 🚀',
                 html: `
-                    <div style="background:#020617; color:#00ff88; padding:30px; font-family:sans-serif;">
+                    <div style="background:#020617; color:#f3ba2f; padding:30px;">
                         <h2>Welcome ${name}!</h2>
                         <p>Your account has been created successfully.</p>
                         <p><b>User ID:</b> ${userId}</p>
                         <p><b>Deposit Address (USDT BEP20):</b><br/>${depositAddress}</p>
-                        <p>Rent a bot now to start earning!</p>
                     </div>
                 `
             });
-            console.log('Welcome email sent to:', email);
         } catch(emailErr) {
             console.log('Email error:', emailErr.message);
         }
         
-        res.json({ 
-            success: true, 
-            userId, 
-            depositAddress,
-            message: 'Account created! Check your email.'
+        res.status(201).json({ 
+            message: 'Account created successfully!', 
+            user: { name, email, userId, depositAddress, balance: 0 }
         });
         
     } catch(err) {
         console.error(err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
-// LOGIN API
-app.post('/api/login', async (req, res) => {
+// ===== NEW LOGIN API =====
+app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         
         if (!user) {
-            return res.status(400).json({ error: 'Email not found!' });
+            return res.status(400).json({ message: 'Email not found!' });
         }
         
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) {
-            return res.status(400).json({ error: 'Wrong password!' });
+            return res.status(400).json({ message: 'Wrong password!' });
         }
         
         res.json({ 
-            success: true, 
+            message: 'Login successful', 
             user: {
+                _id: user._id,
                 name: user.name,
                 email: user.email,
                 balance: user.balance,
@@ -152,15 +155,49 @@ app.post('/api/login', async (req, res) => {
         });
         
     } catch(err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
-// GET USER API
-app.get('/api/user/:userId', async (req, res) => {
+// ===== NEW DEPOSIT API (With pending approval) =====
+app.post('/api/user/deposit', async (req, res) => {
     try {
-        const user = await User.findOne({ userId: req.params.userId });
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        const { userId, txid } = req.body;
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        // Add to pending deposits
+        user.pendingDeposits.push({
+            txid: txid,
+            amount: 0,
+            status: 'pending'
+        });
+        
+        await user.save();
+        
+        // Notify admin
+        await transporter.sendMail({
+            from: 'pannyshp@gmail.com',
+            to: 'pannyshp@gmail.com',
+            subject: 'New Deposit Request!',
+            html: `<p>User: ${user.name} (${user.email})</p><p>TXID: ${txid}</p><p>Status: Pending</p>`
+        });
+        
+        res.json({ message: 'Deposit submitted for approval!' });
+        
+    } catch(err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ===== GET USER BY ID =====
+app.get('/api/user/:id', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
         
         res.json({
             name: user.name,
@@ -170,18 +207,18 @@ app.get('/api/user/:userId', async (req, res) => {
             botPlan: user.botPlan
         });
     } catch(err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
-// RENT BOT API
-app.post('/api/rent-bot', async (req, res) => {
+// ===== RENT BOT API =====
+app.post('/api/user/rent-bot', async (req, res) => {
     try {
         const { userId, botName, botPrice } = req.body;
-        const user = await User.findOne({ userId });
+        const user = await User.findById(userId);
         
-        if (!user) return res.status(404).json({ error: 'User not found' });
-        if (user.balance < botPrice) return res.status(400).json({ error: 'Insufficient balance!' });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (user.balance < botPrice) return res.status(400).json({ message: 'Insufficient balance!' });
         
         user.balance -= botPrice;
         user.botPlan = botName;
@@ -190,62 +227,49 @@ app.post('/api/rent-bot', async (req, res) => {
         res.json({ success: true, newBalance: user.balance, botPlan: user.botPlan });
         
     } catch(err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
-// DEPOSIT WEBHOOK
-app.post('/api/deposit/confirm', async (req, res) => {
+// ===== ADMIN APPROVE DEPOSIT =====
+app.post('/api/admin/approve-deposit', async (req, res) => {
     try {
-        const { address, amount, txHash } = req.body;
-        const user = await User.findOne({ depositAddress: address });
+        const { userId, depositId, amount } = req.body;
+        const user = await User.findById(userId);
         
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) return res.status(404).json({ message: 'User not found' });
         
-        user.balance += amount;
-        user.totalDeposit += amount;
-        await user.save();
+        const deposit = user.pendingDeposits.id(depositId);
+        if (deposit) {
+            deposit.status = 'approved';
+            deposit.amount = amount;
+            user.balance += amount;
+            user.totalDeposit += amount;
+            await user.save();
+            
+            // Send confirmation email
+            await transporter.sendMail({
+                from: 'pannyshp@gmail.com',
+                to: user.email,
+                subject: 'Deposit Approved! ✅',
+                html: `<p>Your deposit of $${amount} has been approved! New balance: $${user.balance}</p>`
+            });
+        }
         
-        res.json({ success: true, newBalance: user.balance });
+        res.json({ message: 'Deposit approved!', newBalance: user.balance });
         
     } catch(err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
-// WITHDRAW API
-app.post('/api/withdraw', async (req, res) => {
-    try {
-        const { email, amount, address } = req.body;
-        const user = await User.findOne({ email });
-        
-        if (!user) return res.status(404).json({ error: 'User not found' });
-        if (user.balance < amount) return res.status(400).json({ error: 'Insufficient balance' });
-        
-        user.balance -= amount;
-        await user.save();
-        
-        await transporter.sendMail({
-            from: 'pannyshp@gmail.com',
-            to: email,
-            subject: '⚠️ Withdrawal Alert',
-            html: `<p>$${amount} has been withdrawn to ${address}</p>`
-        });
-        
-        res.json({ success: true, newBalance: user.balance });
-        
-    } catch(err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ADMIN GET ALL USERS
+// ===== ADMIN GET ALL USERS =====
 app.get('/api/admin/users', async (req, res) => {
     try {
         const users = await User.find({}).sort({ createdAt: -1 });
         res.json({ users, totalUsers: users.length });
     } catch(err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
