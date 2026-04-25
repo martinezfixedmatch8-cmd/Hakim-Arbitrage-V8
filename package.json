@@ -4,13 +4,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "monitor": "node server.js",
-    "pm2-start": "pm2 start server.js --name hakim-bot",
-    "pm2-stop": "pm2 stop hakim-bot",
-    "pm2-restart": "pm2 restart hakim-bot",
-    "pm2-logs": "pm2 logs hakim-bot",
-    "pm2-save": "pm2 save",
-    "pm2-startup": "pm2 startup"
+    "monitor": "node server.js"
   },
   "dependencies": {
     "axios": "^1.15.2",
@@ -24,5 +18,14 @@
     "speakeasy": "^2.0.0",
     "tronweb": "^6.3.0",
     "web3": "^4.16.0"
-  }
+  },
+  "description": "Hakim Arbitrage Trading Bot",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martinezfixedmatch8-cmd/Hakim-Arbitrage-V8.git"
+  },
+  "keywords": ["arbitrage", "trading", "bot", "crypto"],
+  "author": "Hakim AI",
+  "license": "ISC",
+  "type": "commonjs"
 }
