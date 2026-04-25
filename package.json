@@ -18,20 +18,14 @@
     "tronweb": "^6.3.0",
     "web3": "^4.16.0"
   },
-  "description": "",
+  "description": "Hakim Arbitrage Trading Bot",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/martinezfixedmatch8-cmd/Hakim-Arbitrage-V8.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["arbitrage", "trading", "bot", "crypto"],
+  "author": "Hakim AI",
   "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/martinezfixedmatch8-cmd/Hakim-Arbitrage-V8/issues"
-  },
-  "homepage": "https://github.com/martinezfixedmatch8-cmd/Hakim-Arbitrage-V8#readme",
-  "devDependencies": {
-    "nodemon": "^3.1.14"
-  }
+  "type": "commonjs"
+}
 }

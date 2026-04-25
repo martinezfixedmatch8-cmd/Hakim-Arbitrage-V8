@@ -8,8 +8,8 @@ const axios = require("axios");
 const crypto = require("crypto");
 const speakeasy = require("speakeasy");
 
-// Web3 import - FIXED!
-const Web3 = require("web3");
+// Web3 v4.x - DESTRUCTURE FIX (MUHIIM!)
+const { Web3 } = require("web3");
 const TronWeb = require("tronweb");
 
 const app = express();
@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log('✅ MongoDB Connected'))
     .catch(err => console.error('❌ MongoDB Error:', err));
 
-// ==================== WEB3 SETUP (FIXED) ====================
+// ==================== WEB3 SETUP ====================
 const bsc = new Web3("https://bsc-dataseed.binance.org/");
 const tronWeb = new TronWeb({ fullHost: "https://api.trongrid.io" });
 
@@ -171,7 +171,7 @@ async function monitorBEP20Deposits() {
                         await user.save();
                         await sendEmail(user.email, "✅ Deposit Confirmed!", `Your deposit of $${amount} has been confirmed. TXID: ${tx.hash}`);
                         await sendTelegramAlert(`💰 Deposit: $${amount} from ${user.email}\nTXID: ${tx.hash}`);
-                        if (BINANCE_API_KEY) await forwardToBinance(amount, 'BSC');
+                        if (BINANCE_API_KEY && BINANCE_API_KEY !== 'your_binance_api_key_here') await forwardToBinance(amount, 'BSC');
                     }
                 }
             }
@@ -198,7 +198,7 @@ async function monitorTRC20Deposits() {
                         await user.save();
                         await sendEmail(user.email, "✅ Deposit Confirmed!", `Your deposit of $${amount} has been confirmed. TXID: ${tx.hash}`);
                         await sendTelegramAlert(`💰 Deposit: $${amount} from ${user.email}\nTXID: ${tx.hash}`);
-                        if (BINANCE_API_KEY) await forwardToBinance(amount, 'TRX');
+                        if (BINANCE_API_KEY && BINANCE_API_KEY !== 'your_binance_api_key_here') await forwardToBinance(amount, 'TRX');
                     }
                 }
             }
