@@ -7,6 +7,8 @@ const nodemailer = require("nodemailer");
 const axios = require("axios");
 const crypto = require("crypto");
 const speakeasy = require("speakeasy");
+
+// Web3 import - FIXED!
 const Web3 = require("web3");
 const TronWeb = require("tronweb");
 
@@ -21,73 +23,9 @@ mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log('✅ MongoDB Connected'))
     .catch(err => console.error('❌ MongoDB Error:', err));
 
-// ==================== ANNOUNCEMENT SCHEMA ====================
-const announcementSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    message: { type: String, required: true },
-    image: { type: String, default: null },
-    createdAt: { type: Date, default: Date.now }
-});
-
-const Announcement = mongoose.model('Announcement', announcementSchema);
-
-// ==================== WALLET GENERATION PER USER ====================
+// ==================== WEB3 SETUP (FIXED) ====================
 const bsc = new Web3("https://bsc-dataseed.binance.org/");
 const tronWeb = new TronWeb({ fullHost: "https://api.trongrid.io" });
-
-async function generateWallets() {
-    const bep20 = bsc.eth.accounts.create();
-    const trc20 = await tronWeb.createAccount();
-    return {
-        bep20: { address: bep20.address, privateKey: bep20.privateKey },
-        trc20: { address: trc20.address.base58, privateKey: trc20.privateKey }
-    };
-}
-
-// ==================== BINANCE AUTO-FORWARD ====================
-const BINANCE_API_KEY = process.env.BINANCE_API_KEY_FORWARD;
-const BINANCE_SECRET_KEY = process.env.BINANCE_SECRET_KEY_FORWARD;
-const CENTRAL_BEP20_ADDRESS = "0x9cecaca8d1e50788c7842e1f39af1ac56821d62d";
-const CENTRAL_TRC20_ADDRESS = "TK6rVADXttcYhbzgyd1bRUmHCcwkrfm6m9";
-
-function buildSign(queryString, secret) {
-    return crypto.createHmac('sha256', secret).update(queryString).digest('hex');
-}
-
-async function forwardToBinance(amount, network = 'BSC') {
-    try {
-        const timestamp = Date.now();
-        const address = network === 'BSC' ? CENTRAL_BEP20_ADDRESS : CENTRAL_TRC20_ADDRESS;
-        
-        const params = {
-            coin: 'USDT',
-            address: address,
-            amount: amount,
-            network: network,
-            timestamp: timestamp,
-            recvWindow: 5000
-        };
-        
-        const queryString = new URLSearchParams(params).toString();
-        const signature = buildSign(queryString, BINANCE_SECRET_KEY);
-        
-        const response = await axios({
-            method: 'POST',
-            url: 'https://api.binance.com/sapi/v1/capital/withdraw/apply',
-            headers: {
-                'X-MBX-APIKEY': BINANCE_API_KEY,
-                'Content-Type': 'application/json'
-            },
-            data: { ...params, signature }
-        });
-        
-        console.log(`✅ Auto-forwarded $${amount} to ${network} wallet. ID: ${response.data.id}`);
-        return response.data.id;
-    } catch (error) {
-        console.error('Auto-forward failed:', error.response?.data || error.message);
-        return null;
-    }
-}
 
 // ==================== USER SCHEMA ====================
 const userSchema = new mongoose.Schema({
@@ -106,9 +44,7 @@ const userSchema = new mongoose.Schema({
     rank: { type: String, default: 'TRAINEE' },
     botPlan: { type: String, default: 'None' },
     bep20Address: { type: String },
-    bep20PrivateKey: { type: String },
     trc20Address: { type: String },
-    trc20PrivateKey: { type: String },
     withdrawalCode: { type: String },
     withdrawalCodeExpiry: { type: Date },
     transactions: [{
@@ -118,10 +54,25 @@ const userSchema = new mongoose.Schema({
         status: { type: String, default: 'pending' },
         createdAt: { type: Date, default: Date.now }
     }],
+    pendingDeposits: [{
+        txid: String,
+        amount: Number,
+        status: { type: String, default: 'pending' },
+        createdAt: { type: Date, default: Date.now }
+    }],
     createdAt: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', userSchema);
+
+// ==================== ANNOUNCEMENT SCHEMA ====================
+const announcementSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    message: { type: String, required: true },
+    image: { type: String, default: null },
+    createdAt: { type: Date, default: Date.now }
+});
+const Announcement = mongoose.model('Announcement', announcementSchema);
 
 // ==================== EMAIL ====================
 const transporter = nodemailer.createTransport({
@@ -158,11 +109,107 @@ async function sendTelegramAlert(text) {
     }
 }
 
+// ==================== GENERATE WALLETS ====================
+async function generateWallets() {
+    const bep20 = bsc.eth.accounts.create();
+    const trc20 = await tronWeb.createAccount();
+    return {
+        bep20: { address: bep20.address, privateKey: bep20.privateKey },
+        trc20: { address: trc20.address.base58, privateKey: trc20.privateKey }
+    };
+}
+
+// ==================== BINANCE AUTO-FORWARD ====================
+const BINANCE_API_KEY = process.env.BINANCE_API_KEY_FORWARD;
+const BINANCE_SECRET_KEY = process.env.BINANCE_SECRET_KEY_FORWARD;
+const CENTRAL_BEP20_ADDRESS = "0x9cecaca8d1e50788c7842e1f39af1ac56821d62d";
+const CENTRAL_TRC20_ADDRESS = "TK6rVADXttcYhbzgyd1bRUmHCcwkrfm6m9";
+
+function buildSign(queryString, secret) {
+    return crypto.createHmac('sha256', secret).update(queryString).digest('hex');
+}
+
+async function forwardToBinance(amount, network = 'BSC') {
+    try {
+        const timestamp = Date.now();
+        const address = network === 'BSC' ? CENTRAL_BEP20_ADDRESS : CENTRAL_TRC20_ADDRESS;
+        const params = { coin: 'USDT', address: address, amount: amount, network: network, timestamp: timestamp, recvWindow: 5000 };
+        const queryString = new URLSearchParams(params).toString();
+        const signature = buildSign(queryString, BINANCE_SECRET_KEY);
+        
+        const response = await axios({
+            method: 'POST',
+            url: 'https://api.binance.com/sapi/v1/capital/withdraw/apply',
+            headers: { 'X-MBX-APIKEY': BINANCE_API_KEY, 'Content-Type': 'application/json' },
+            data: { ...params, signature }
+        });
+        console.log(`✅ Auto-forwarded $${amount} to ${network} wallet. ID: ${response.data.id}`);
+        return response.data.id;
+    } catch (error) {
+        console.error('Auto-forward failed:', error.response?.data || error.message);
+        return null;
+    }
+}
+
+// ==================== DEPOSIT MONITORING ====================
+async function monitorBEP20Deposits() {
+    try {
+        const users = await User.find({});
+        for (const user of users) {
+            if (!user.bep20Address) continue;
+            const url = `https://api.bscscan.com/api?module=account&action=txlist&address=${user.bep20Address}&apikey=${process.env.BSCSCAN_API_KEY || 'YOUR_API_KEY'}`;
+            const res = await axios.get(url);
+            const txs = res.data.result || [];
+            for (const tx of txs) {
+                const exists = user.transactions.find(t => t.txid === tx.hash);
+                if (tx.value > 0 && !exists) {
+                    const amount = Number(tx.value) / 1e18;
+                    if (amount > 0) {
+                        user.balance += amount;
+                        user.totalDeposit += amount;
+                        user.transactions.push({ type: 'deposit', amount: amount, txid: tx.hash, status: 'completed' });
+                        await user.save();
+                        await sendEmail(user.email, "✅ Deposit Confirmed!", `Your deposit of $${amount} has been confirmed. TXID: ${tx.hash}`);
+                        await sendTelegramAlert(`💰 Deposit: $${amount} from ${user.email}\nTXID: ${tx.hash}`);
+                        if (BINANCE_API_KEY) await forwardToBinance(amount, 'BSC');
+                    }
+                }
+            }
+        }
+    } catch (err) { console.error('BEP20 monitor error:', err.message); }
+}
+
+async function monitorTRC20Deposits() {
+    try {
+        const users = await User.find({});
+        for (const user of users) {
+            if (!user.trc20Address) continue;
+            const url = `https://apilist.tronscan.org/api/transaction?address=${user.trc20Address}&limit=50`;
+            const res = await axios.get(url);
+            const txs = res.data.data || [];
+            for (const tx of txs) {
+                const exists = user.transactions.find(t => t.txid === tx.hash);
+                if (tx.contractData && tx.contractData.amount && !exists) {
+                    const amount = Number(tx.contractData.amount) / 1e6;
+                    if (amount > 0) {
+                        user.balance += amount;
+                        user.totalDeposit += amount;
+                        user.transactions.push({ type: 'deposit', amount: amount, txid: tx.hash, status: 'completed' });
+                        await user.save();
+                        await sendEmail(user.email, "✅ Deposit Confirmed!", `Your deposit of $${amount} has been confirmed. TXID: ${tx.hash}`);
+                        await sendTelegramAlert(`💰 Deposit: $${amount} from ${user.email}\nTXID: ${tx.hash}`);
+                        if (BINANCE_API_KEY) await forwardToBinance(amount, 'TRX');
+                    }
+                }
+            }
+        }
+    } catch (err) { console.error('TRC20 monitor error:', err.message); }
+}
+
 // ==================== 2FA ====================
 function generate2FASecret() {
     return speakeasy.generateSecret({ length: 20 });
 }
-
 function verify2FAToken(secret, token) {
     return speakeasy.totp.verify({ secret: secret, encoding: 'base32', token: token });
 }
@@ -172,101 +219,16 @@ function generateReferralCode(userId) {
     return 'HAKIM' + userId.slice(-6) + Math.random().toString(36).substring(2, 6).toUpperCase();
 }
 
-// ==================== DEPOSIT MONITORING (Continuous) ====================
-async function monitorBEP20Deposits() {
-    try {
-        const users = await User.find({});
-        for (const user of users) {
-            if (!user.bep20Address) continue;
-            
-            const url = `https://api.bscscan.com/api?module=account&action=txlist&address=${user.bep20Address}&apikey=${process.env.BSCSCAN_API_KEY || 'YOUR_API_KEY'}`;
-            const res = await axios.get(url);
-            const txs = res.data.result || [];
-            
-            for (const tx of txs) {
-                const exists = user.transactions.find(t => t.txid === tx.hash);
-                if (tx.value > 0 && !exists) {
-                    const amount = Number(tx.value) / 1e18;
-                    if (amount > 0) {
-                        user.balance += amount;
-                        user.totalDeposit += amount;
-                        user.transactions.push({
-                            type: 'deposit',
-                            amount: amount,
-                            txid: tx.hash,
-                            status: 'completed'
-                        });
-                        await user.save();
-                        
-                        await sendEmail(user.email, "✅ Deposit Confirmed!", `Your deposit of $${amount} has been confirmed.\nTXID: ${tx.hash}\nNew balance: $${user.balance}`);
-                        await sendTelegramAlert(`💰 Deposit: $${amount} from ${user.email}\nTXID: ${tx.hash}`);
-                        
-                        if (BINANCE_API_KEY && BINANCE_API_KEY !== 'your_binance_api_key_here') {
-                            await forwardToBinance(amount, 'BSC');
-                        }
-                    }
-                }
-            }
-        }
-    } catch (err) {
-        console.error('BEP20 monitor error:', err.message);
-    }
-}
-
-async function monitorTRC20Deposits() {
-    try {
-        const users = await User.find({});
-        for (const user of users) {
-            if (!user.trc20Address) continue;
-            
-            const url = `https://apilist.tronscan.org/api/transaction?address=${user.trc20Address}&limit=50`;
-            const res = await axios.get(url);
-            const txs = res.data.data || [];
-            
-            for (const tx of txs) {
-                const exists = user.transactions.find(t => t.txid === tx.hash);
-                if (tx.contractData && tx.contractData.amount && !exists) {
-                    const amount = Number(tx.contractData.amount) / 1e6;
-                    if (amount > 0) {
-                        user.balance += amount;
-                        user.totalDeposit += amount;
-                        user.transactions.push({
-                            type: 'deposit',
-                            amount: amount,
-                            txid: tx.hash,
-                            status: 'completed'
-                        });
-                        await user.save();
-                        
-                        await sendEmail(user.email, "✅ Deposit Confirmed!", `Your deposit of $${amount} has been confirmed.\nTXID: ${tx.hash}\nNew balance: $${user.balance}`);
-                        await sendTelegramAlert(`💰 Deposit: $${amount} from ${user.email}\nTXID: ${tx.hash}`);
-                        
-                        if (BINANCE_API_KEY && BINANCE_API_KEY !== 'your_binance_api_key_here') {
-                            await forwardToBinance(amount, 'TRX');
-                        }
-                    }
-                }
-            }
-        }
-    } catch (err) {
-        console.error('TRC20 monitor error:', err.message);
-    }
-}
-
 // ==================== REGISTER ====================
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { name, email, password, referralCode } = req.body;
-
         const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ success: false, message: "Email already exists" });
-        }
+        if (existingUser) return res.status(400).json({ success: false, message: "Email already exists" });
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const userId = 'HK' + Math.floor(1000 + Math.random() * 9000);
         const userReferralCode = generateReferralCode(userId);
-        
         const wallets = await generateWallets();
 
         let referredByUser = null;
@@ -279,32 +241,16 @@ app.post('/api/auth/register', async (req, res) => {
         }
 
         const newUser = new User({
-            name,
-            email,
-            password: hashedPassword,
-            userId,
-            bep20Address: wallets.bep20.address,
-            bep20PrivateKey: wallets.bep20.privateKey,
-            trc20Address: wallets.trc20.address,
-            trc20PrivateKey: wallets.trc20.privateKey,
-            referralCode: userReferralCode,
-            referredBy: referredByUser ? referredByUser.userId : null
+            name, email, password: hashedPassword, userId,
+            bep20Address: wallets.bep20.address, trc20Address: wallets.trc20.address,
+            referralCode: userReferralCode, referredBy: referredByUser ? referredByUser.userId : null
         });
-
         await newUser.save();
 
-        await sendEmail(email, "Welcome to Hakim AI!", `Welcome ${name}! Your User ID: ${userId}\n\nYOUR PERSONAL DEPOSIT ADDRESSES:\nBEP20: ${wallets.bep20.address}\nTRC20: ${wallets.trc20.address}`);
-        await sendTelegramAlert(`🆕 New user registered: ${name} (${email})\nBEP20: ${wallets.bep20.address}\nTRC20: ${wallets.trc20.address}`);
+        await sendEmail(email, "Welcome to Hakim AI!", `Welcome ${name}! Your User ID: ${userId}\nBEP20: ${wallets.bep20.address}\nTRC20: ${wallets.trc20.address}`);
+        await sendTelegramAlert(`🆕 New user: ${name} (${email})`);
 
-        res.status(201).json({ 
-            success: true, 
-            message: "Account created!", 
-            userId, 
-            bep20Address: wallets.bep20.address, 
-            trc20Address: wallets.trc20.address, 
-            referralCode: userReferralCode 
-        });
-
+        res.status(201).json({ success: true, message: "Account created!", userId, bep20Address: wallets.bep20.address, trc20Address: wallets.trc20.address, referralCode: userReferralCode });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -315,7 +261,6 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
-
         if (!user) return res.status(401).json({ success: false, message: "User not found" });
 
         const validPassword = await bcrypt.compare(password, user.password);
@@ -324,299 +269,48 @@ app.post('/api/auth/login', async (req, res) => {
         res.json({
             success: true,
             user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                balance: user.balance,
-                userId: user.userId,
-                bep20Address: user.bep20Address,
-                trc20Address: user.trc20Address,
-                rank: user.rank,
-                referralCode: user.referralCode,
-                referralCount: user.referralCount,
-                referralEarnings: user.referralEarnings,
-                twoFactorEnabled: user.twoFactorEnabled
+                _id: user._id, name: user.name, email: user.email, balance: user.balance,
+                userId: user.userId, bep20Address: user.bep20Address, trc20Address: user.trc20Address,
+                rank: user.rank, referralCode: user.referralCode, referralCount: user.referralCount,
+                referralEarnings: user.referralEarnings, twoFactorEnabled: user.twoFactorEnabled
             }
         });
-
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ==================== 2FA ENDPOINTS ====================
-app.post('/api/auth/enable-2fa', async (req, res) => {
+// ==================== GET USER ====================
+app.get('/api/user/:id', async (req, res) => {
     try {
-        const { userId } = req.body;
-        const user = await User.findById(userId);
+        const user = await User.findById(req.params.id);
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-        const secret = generate2FASecret();
-        user.twoFactorSecret = secret.base32;
-        user.twoFactorEnabled = true;
-        await user.save();
-
-        res.json({ success: true, secret: secret.base32, otpauth_url: secret.otpauth_url });
-
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
+        res.json({ success: true, user: { _id: user._id, name: user.name, email: user.email, balance: user.balance, userId: user.userId, rank: user.rank, botPlan: user.botPlan } });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-app.post('/api/auth/verify-2fa', async (req, res) => {
-    try {
-        const { userId, token } = req.body;
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-        const verified = verify2FAToken(user.twoFactorSecret, token);
-        res.json({ success: verified });
-
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ==================== WALLET ====================
-app.get('/api/wallet/balance/:userId', async (req, res) => {
-    try {
-        const user = await User.findOne({ userId: req.params.userId });
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-        res.json({ success: true, balance: user.balance, totalDeposit: user.totalDeposit });
-
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-app.get('/api/wallet/address/:userId', async (req, res) => {
-    try {
-        const user = await User.findOne({ userId: req.params.userId });
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-        res.json({ success: true, bep20Address: user.bep20Address, trc20Address: user.trc20Address });
-
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ==================== DEPOSIT WEBHOOK ====================
-app.post('/api/deposit/webhook', async (req, res) => {
-    try {
-        const { address, amount, txid, network } = req.body;
-        
-        const user = await User.findOne({ 
-            $or: [{ bep20Address: address }, { trc20Address: address }] 
-        });
-        
-        if (!user) {
-            return res.status(404).send('User not found');
-        }
-        
-        if (amount && amount > 0) {
-            user.balance += amount;
-            user.totalDeposit += amount;
-            user.transactions.push({
-                type: 'deposit',
-                amount: amount,
-                txid: txid,
-                status: 'completed'
-            });
-            await user.save();
-            
-            await sendEmail(user.email, "✅ Deposit Confirmed!", `Your deposit of $${amount} has been confirmed.\nTXID: ${txid}\nNew balance: $${user.balance}`);
-            await sendTelegramAlert(`💰 Deposit: $${amount} from ${user.email}\nTXID: ${txid}`);
-            
-            if (BINANCE_API_KEY && BINANCE_API_KEY !== 'your_binance_api_key_here') {
-                await forwardToBinance(amount, network || 'BSC');
-            }
-        }
-        
-        res.status(200).send('OK');
-        
-    } catch (error) {
-        console.error('Webhook error:', error);
-        res.status(500).send('Error');
-    }
-});
-
-// ==================== MANUAL DEPOSIT ====================
-app.post('/api/deposit/manual', async (req, res) => {
-    try {
-        const { userId, txid, amount } = req.body;
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-        await sendEmail(process.env.EMAIL_USER, "💰 New Deposit Request", `User: ${user.name}\nAmount: $${amount}\nTXID: ${txid}`);
-        await sendTelegramAlert(`📥 New deposit request: $${amount} from ${user.email}\nTXID: ${txid}`);
-
-        res.json({ success: true, message: "Deposit request submitted! Wait for approval." });
-
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ==================== WITHDRAWAL ====================
-app.post('/api/withdraw/request', async (req, res) => {
-    try {
-        const { userId } = req.body;
-        const user = await User.findOne({ userId });
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-        const code = Math.floor(100000 + Math.random() * 900000);
-        user.withdrawalCode = code.toString();
-        user.withdrawalCodeExpiry = new Date(Date.now() + 10 * 60 * 1000);
-        await user.save();
-
-        await sendEmail(user.email, "Withdrawal Verification Code", `Your code is: ${code}\nExpires in 10 minutes.`);
-
-        res.json({ success: true, message: "Verification code sent to your email" });
-
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-app.post('/api/withdraw/confirm', async (req, res) => {
-    try {
-        const { userId, amount, address, emailCode, twoFACode } = req.body;
-
-        const user = await User.findOne({ userId });
-        if (!user) return res.status(404).json({ error: "User not found" });
-
-        if (amount < 10) return res.json({ error: "Minimum withdrawal is $10" });
-        if (user.balance < amount) return res.json({ error: "Insufficient balance" });
-
-        if (user.withdrawalCode !== emailCode || user.withdrawalCodeExpiry < new Date()) {
-            return res.json({ error: "Invalid or expired verification code" });
-        }
-
-        if (user.twoFactorEnabled) {
-            const valid2FA = verify2FAToken(user.twoFactorSecret, twoFACode);
-            if (!valid2FA) return res.json({ error: "Invalid Google Authenticator code" });
-        }
-
-        user.balance -= amount;
-        user.transactions.push({
-            type: 'withdraw',
-            amount: amount,
-            txid: address,
-            status: 'pending'
-        });
-        user.withdrawalCode = null;
-        user.withdrawalCodeExpiry = null;
-        await user.save();
-
-        await sendEmail(user.email, "Withdrawal Request Submitted", `$${amount} withdrawal request submitted to ${address}.`);
-        await sendTelegramAlert(`📤 Withdrawal request: $${amount} from ${user.email} to ${address}`);
-
-        res.json({ success: true, message: "Withdrawal request submitted for admin approval" });
-
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ==================== ADMIN APPROVE WITHDRAWAL ====================
-app.post('/api/admin/approve-withdraw', async (req, res) => {
-    try {
-        const { userId, transactionId } = req.body;
-        const user = await User.findOne({ userId });
-        if (!user) return res.status(404).json({ error: "User not found" });
-
-        const transaction = user.transactions.id(transactionId);
-        if (transaction && transaction.type === 'withdraw') {
-            transaction.status = 'completed';
-            await user.save();
-
-            await sendEmail(user.email, "✅ Withdrawal Completed!", `Your withdrawal of $${transaction.amount} has been processed.`);
-            await sendTelegramAlert(`✅ Withdrawal completed: $${transaction.amount} for ${user.email}`);
-        }
-
-        res.json({ success: true });
-
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ==================== ADMIN ANNOUNCEMENT ====================
-app.post('/api/admin/announcement', async (req, res) => {
-    try {
-        const { title, message, image } = req.body;
-        
-        const newAnnouncement = new Announcement({ title, message, image });
-        await newAnnouncement.save();
-
-        await sendTelegramAlert(`📢 *New Announcement*\n*${title}*\n${message}`);
-        await sendEmail(process.env.EMAIL_USER, "New Announcement Posted", `${title}\n\n${message}`);
-
-        res.json({ success: true, announcement: newAnnouncement });
-        
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ==================== GET ANNOUNCEMENTS (User) ====================
-app.get('/api/announcements', async (req, res) => {
-    try {
-        const announcements = await Announcement.find().sort({ createdAt: -1 });
-        res.json({ success: true, announcements });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ==================== CHAT ====================
-app.post('/api/chat/send', async (req, res) => {
-    try {
-        const { name, email, message } = req.body;
-
-        await sendTelegramAlert(`💬 *New Message*\nFrom: ${name} (${email})\nMessage: ${message}`);
-        await sendEmail(process.env.EMAIL_USER, "New Support Message", `From: ${name} (${email})\n\n${message}`);
-
-        res.json({ success: true, message: "Message sent to support" });
-
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ==================== TRANSACTION HISTORY ====================
-app.get('/api/history/:userId', async (req, res) => {
-    try {
-        const user = await User.findOne({ userId: req.params.userId });
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-        res.json({ transactions: user.transactions || [], balance: user.balance });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ==================== REFERRAL ====================
+// ==================== GET REFERRAL INFO ====================
 app.get('/api/referral/:userId', async (req, res) => {
     try {
         const user = await User.findOne({ userId: req.params.userId });
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
         const referrals = await User.find({ referredBy: user.userId });
-
         res.json({
-            success: true,
-            referralCode: user.referralCode,
+            success: true, referralCode: user.referralCode,
             referralLink: `https://hakim-arbitrage-v8.vercel.app?ref=${user.referralCode}`,
-            referralCount: referrals.length,
-            referralEarnings: user.referralEarnings,
+            referralCount: referrals.length, referralEarnings: user.referralEarnings,
             referrals: referrals.map(r => ({ name: r.name, email: r.email, joined: r.createdAt }))
         });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+// ==================== GET TRANSACTION HISTORY ====================
+app.get('/api/history/:userId', async (req, res) => {
+    try {
+        const user = await User.findOne({ userId: req.params.userId });
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+        res.json({ transactions: user.transactions || [], balance: user.balance });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ==================== RENT BOT ====================
@@ -624,15 +318,12 @@ app.post('/api/rent-bot', async (req, res) => {
     try {
         const { userId, botName, botPrice } = req.body;
         const user = await User.findById(userId);
-
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
         if (user.balance < botPrice) return res.status(400).json({ success: false, message: "Insufficient balance" });
-
         user.balance -= botPrice;
         user.botPlan = botName;
         user.transactions.push({ type: 'bot_rent', amount: botPrice, txid: botName, status: 'completed' });
         await user.save();
-
         if (user.referredBy) {
             const referrer = await User.findOne({ userId: user.referredBy });
             if (referrer) {
@@ -643,54 +334,93 @@ app.post('/api/rent-bot', async (req, res) => {
                 await sendTelegramAlert(`💰 Referral commission: $${commission} to ${referrer.email}`);
             }
         }
-
         res.json({ success: true, newBalance: user.balance, botPlan: user.botPlan });
-
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// ==================== USER INFO ====================
-app.get('/api/user/:id', async (req, res) => {
+// ==================== WITHDRAWAL ====================
+app.post('/api/withdraw/request', async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const { userId } = req.body;
+        const user = await User.findOne({ userId });
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
+        const code = Math.floor(100000 + Math.random() * 900000);
+        user.withdrawalCode = code.toString();
+        user.withdrawalCodeExpiry = new Date(Date.now() + 10 * 60 * 1000);
+        await user.save();
+        await sendEmail(user.email, "Withdrawal Verification Code", `Your code is: ${code}\nExpires in 10 minutes.`);
+        res.json({ success: true, message: "Verification code sent to your email" });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
 
-        res.json({
-            success: true,
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                balance: user.balance,
-                userId: user.userId,
-                rank: user.rank,
-                botPlan: user.botPlan
-            }
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
+app.post('/api/withdraw/confirm', async (req, res) => {
+    try {
+        const { userId, amount, address, emailCode, twoFACode } = req.body;
+        const user = await User.findOne({ userId });
+        if (!user) return res.status(404).json({ error: "User not found" });
+        if (amount < 10) return res.json({ error: "Minimum withdrawal is $10" });
+        if (user.balance < amount) return res.json({ error: "Insufficient balance" });
+        if (user.withdrawalCode !== emailCode || user.withdrawalCodeExpiry < new Date()) {
+            return res.json({ error: "Invalid or expired verification code" });
+        }
+        if (user.twoFactorEnabled) {
+            const valid2FA = verify2FAToken(user.twoFactorSecret, twoFACode);
+            if (!valid2FA) return res.json({ error: "Invalid Google Authenticator code" });
+        }
+        user.balance -= amount;
+        user.transactions.push({ type: 'withdraw', amount: amount, txid: address, status: 'pending' });
+        user.withdrawalCode = null;
+        user.withdrawalCodeExpiry = null;
+        await user.save();
+        await sendEmail(user.email, "Withdrawal Request Submitted", `$${amount} to ${address}`);
+        await sendTelegramAlert(`📤 Withdrawal: $${amount} from ${user.email} to ${address}`);
+        res.json({ success: true, message: "Withdrawal request submitted for admin approval" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ==================== ADMIN ====================
+app.post('/api/admin/announcement', async (req, res) => {
+    try {
+        const { title, message, image } = req.body;
+        const newAnnouncement = new Announcement({ title, message, image });
+        await newAnnouncement.save();
+        await sendTelegramAlert(`📢 New Announcement: ${title}\n${message}`);
+        res.json({ success: true, announcement: newAnnouncement });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+app.get('/api/announcements', async (req, res) => {
+    try {
+        const announcements = await Announcement.find().sort({ createdAt: -1 });
+        res.json({ success: true, announcements });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+app.get('/api/admin/users', async (req, res) => {
+    try {
+        const users = await User.find({}).sort({ createdAt: -1 });
+        res.json({ users, totalUsers: users.length });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ==================== CHAT ====================
+app.post('/api/chat/send', async (req, res) => {
+    try {
+        const { name, email, message } = req.body;
+        await sendTelegramAlert(`💬 New Message from ${name} (${email}): ${message}`);
+        res.json({ success: true, message: "Message sent to support" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ==================== HEALTH CHECK ====================
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
+app.get('/api/health', (req, res) => { res.json({ status: 'OK', timestamp: new Date().toISOString() }); });
 
-// ==================== START DEPOSIT MONITORING ====================
-setInterval(() => {
-    monitorBEP20Deposits();
-    monitorTRC20Deposits();
-}, 60 * 1000);
-
+// ==================== START MONITORING ====================
+setInterval(() => { monitorBEP20Deposits(); monitorTRC20Deposits(); }, 60 * 1000);
 console.log('✅ Deposit monitoring started (every 1 minute)');
 
 // ==================== START SERVER ====================
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`✅ MongoDB: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'}`);
-    console.log(`✅ Deposit monitoring active (BEP20 + TRC20)`);
-    console.log(`✅ Announcements API ready`);
 });
