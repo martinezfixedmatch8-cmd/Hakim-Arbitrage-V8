@@ -51,7 +51,6 @@ try {
     }
 } catch (err) {
     console.log('❌ TronWeb initialization failed:', err.message);
-    // Fallback - create dummy object for generateWallets
     tronWeb = {
         createAccount: async () => ({ 
             address: { base58: "TK6rVADXttcYhbzgyd1bRUmHCcwkrfm6m9" }, 
@@ -268,6 +267,30 @@ function generateReferralCode(userId) {
     return 'HAKIM' + userId.slice(-6) + Math.random().toString(36).substring(2, 6).toUpperCase();
 }
 
+// ==================== ROOT ROUTE ====================
+app.get('/', (req, res) => {
+    res.json({
+        status: 'OK',
+        message: 'Hakim Arbitrage API is running',
+        timestamp: new Date().toISOString(),
+        endpoints: {
+            health: '/api/health',
+            register: '/api/auth/register',
+            login: '/api/auth/login',
+            user: '/api/user/:id',
+            referral: '/api/referral/:userId',
+            history: '/api/history/:userId',
+            announcements: '/api/announcements',
+            admin_users: '/api/admin/users'
+        }
+    });
+});
+
+// ==================== HEALTH CHECK ====================
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 // ==================== REGISTER ====================
 app.post('/api/auth/register', async (req, res) => {
     try {
@@ -460,9 +483,6 @@ app.post('/api/chat/send', async (req, res) => {
         res.json({ success: true, message: "Message sent to support" });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
-// ==================== HEALTH CHECK ====================
-app.get('/api/health', (req, res) => { res.json({ status: 'OK', timestamp: new Date().toISOString() }); });
 
 // ==================== START MONITORING ====================
 setInterval(() => { monitorBEP20Deposits(); monitorTRC20Deposits(); }, 60 * 1000);
