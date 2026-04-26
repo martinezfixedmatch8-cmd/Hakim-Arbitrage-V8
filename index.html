@@ -1,207 +1,634 @@
 <!DOCTYPE html>
-<html lang="so">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HAKIM AI | Professional Quantum Arbitrage</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>HAKIM AI | Quantum Arbitrage Trading</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://s3.tradingview.com/tv.js"></script>
     <style>
-        :root {
-            --gold: #f3ba2f; --dark-bg: #0b0e11; --card-bg: #1e2329;
-            --text-gray: #848e9c; --success: #0ecb81; --danger: #f6465d; --nav-bg: #161a1e;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--dark-bg); color: white; overflow-x: hidden; padding-bottom: 70px; }
 
-        /* AUTH MODAL */
-        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark-bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: var(--card-bg); padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid #333; }
+        :root {
+            --gold: #f3ba2f;
+            --gold-dark: #d49a1a;
+            --bg-dark: #0a0c10;
+            --card-bg: #1a1f2c;
+            --card-bg-light: #252b3a;
+            --text-gray: #8a92a3;
+            --text-white: #ffffff;
+            --success: #0ecb81;
+            --danger: #f6465d;
+            --blue: #2b6ef0;
+        }
 
-        /* HEADER */
-        .header { background: var(--nav-bg); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; z-index: 1000; top: 0; border-bottom: 1px solid #333; }
-        .logo { font-size: 22px; font-weight: 800; color: white; } .logo span { color: var(--gold); }
-        .nav-links { display: flex; gap: 15px; list-style: none; }
-        .nav-links li { cursor: pointer; font-size: 14px; color: var(--text-gray); transition: 0.3s; }
-        .nav-links li:hover, .nav-links li.active { color: var(--gold); }
+        body {
+            background: var(--bg-dark);
+            color: var(--text-white);
+            font-family: 'Segoe UI', 'Inter', sans-serif;
+            overflow-x: hidden;
+            padding-bottom: 70px;
+        }
 
-        /* LIVE MARKET STRIP */
-        .market-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px 5%; margin-top: 70px; background: #161a1e; }
-        .market-item { text-align: center; font-size: 12px; border-right: 1px solid #333; }
-        .market-item:last-child { border: none; }
-        .price { display: block; font-weight: bold; margin-top: 5px; }
+        /* Header */
+        .header {
+            background: rgba(10, 12, 16, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(243, 186, 47, 0.2);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
-        /* SECTIONS */
-        .section { display: none; padding: 20px 5%; animation: fadeIn 0.4s ease; }
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            font-family: 'Orbitron', monospace;
+        }
+        .logo span { color: var(--gold); }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--gold);
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
         .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* CARDS */
-        .card { background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; }
-        .btn-main { width: 100%; padding: 14px; border-radius: 8px; border: none; background: var(--gold); color: black; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #2b3139; color: white; margin-top: 10px; }
+        /* Hero Slider */
+        .hero-slider {
+            position: relative;
+            height: 300px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: 1s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slide.active { opacity: 1; }
+        .slide-content {
+            background: rgba(0,0,0,0.6);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .slide-content h2 { font-size: 28px; margin-bottom: 10px; }
+        .slide-content p { color: var(--text-gray); }
 
-        /* TRADING VIEW */
-        .chart-container { height: 400px; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #333; margin: 15px 0; }
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.3s;
+        }
+        .card:hover { transform: translateY(-3px); border-color: var(--gold); }
+        
+        .balance-card {
+            background: linear-gradient(135deg, #1a1f2c, #0f121a);
+            text-align: center;
+            padding: 30px;
+            border-radius: 24px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(243,186,47,0.3);
+        }
+        .balance-amount { font-size: 42px; font-weight: 800; color: var(--gold); margin: 10px 0; }
 
-        /* BOTTOM NAV */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; z-index: 1000; }
-        .nav-item { text-align: center; color: var(--text-gray); font-size: 10px; cursor: pointer; }
-        .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
-        .nav-item.active { color: var(--gold); }
+        /* Grids */
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+
+        /* Bot Cards */
+        .bot-card {
+            background: var(--card-bg-light);
+            border-radius: 16px;
+            padding: 20px;
+            transition: 0.3s;
+        }
+        .bot-card:hover { transform: translateY(-3px); box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .bot-price { font-size: 24px; font-weight: 800; color: var(--gold); margin: 10px 0; }
+        .tag {
+            background: rgba(243,186,47,0.1);
+            color: var(--gold);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            display: inline-block;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: #2a2e38;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill { background: var(--gold); height: 100%; width: 0%; transition: width 0.5s; }
+
+        /* Forms */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; color: var(--text-gray); margin-bottom: 5px; }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #2a2e38;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+        }
+        input:focus { outline: none; border-color: var(--gold); }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            color: #0a0c10;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(243,186,47,0.3); }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--gold);
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--gold);
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        th { color: var(--gold); font-size: 12px; }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(16,18,23,0.98);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 20px;
+            border-top: 1px solid rgba(243,186,47,0.2);
+            z-index: 100;
+        }
+        .nav-btn {
+            text-align: center;
+            color: var(--text-gray);
+            cursor: pointer;
+            flex: 1;
+            transition: 0.3s;
+        }
+        .nav-btn.active { color: var(--gold); transform: translateY(-3px); }
+        .nav-btn i { font-size: 22px; display: block; margin-bottom: 4px; }
+        .nav-btn span { font-size: 10px; }
+
+        /* Live Counter */
+        .counter-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .counter-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 3px solid var(--gold);
+        }
+        .counter-card small { color: var(--text-gray); font-size: 11px; }
+        .counter-card h3 { font-size: 18px; margin-top: 5px; }
+
+        /* Chart */
+        .chart-container {
+            height: 350px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .hero-slider { height: 200px; }
+            .balance-amount { font-size: 32px; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="auth-overlay">
-        <div class="auth-card" id="login-form">
-            <h2 style="text-align:center; margin-bottom:20px;">HAKIM <span>AI</span> Login</h2>
-            <input type="email" placeholder="Email Address" id="l-email">
-            <input type="password" placeholder="Password" id="l-pass">
-            <button class="btn-main" onclick="handleAuth()">Login Now</button>
-            <p style="font-size:12px; text-align:center; margin-top:15px; color:var(--text-gray);">
-                Account ma lihid? <span style="color:var(--gold); cursor:pointer;" onclick="toggleAuth()">Register</span>
-            </p>
+<!-- HEADER -->
+<header class="header">
+    <div class="logo">HAKIM<span>AI</span></div>
+    <div class="nav-links">
+        <a onclick="showSection('home')" class="active">Home</a>
+        <a onclick="showSection('dashboard')">Dashboard</a>
+        <a onclick="showSection('bots')">Rent Bot</a>
+        <a onclick="showSection('mybot')">My Bot</a>
+        <a onclick="showSection('referral')">Referral</a>
+        <a onclick="showSection('leaderboard')">Leaderboard</a>
+        <a onclick="showSection('profile')">Profile</a>
+        <a onclick="showSection('history')">History</a>
+        <a onclick="showSection('terms')">Terms</a>
+        <a onclick="showSection('faq')">FAQ</a>
+        <a onclick="showSection('support')">Support</a>
+        <a onclick="showSection('admin')">Admin</a>
+    </div>
+</header>
+
+<!-- ==================== 1. HOME SECTION ==================== -->
+<div id="home" class="section active">
+    <div class="hero-slider">
+        <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1200');">
+            <div class="slide-content"><h2>🚀 Quantum Arbitrage Trading</h2><p>AI-powered bots • 24/7 • Daily profits</p></div>
+        </div>
+        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1621761191319-c6fb62004040?auto=format&fit=crop&q=80&w=1200');">
+            <div class="slide-content"><h2>🔒 Secure & Transparent</h2><p>Your funds are safe with blockchain technology</p></div>
         </div>
     </div>
 
-    <header class="header">
-        <div class="logo">HAKIM <span>AI</span></div>
-        <ul class="nav-links">
-            <li onclick="showSection('home')" class="active">Home</li>
-            <li onclick="showSection('bots')">Bots</li>
-            <li onclick="showSection('leadership')">Ranks</li>
-        </ul>
-    </header>
-
-    <div class="market-strip">
-        <div class="market-item">BTC/USDT <span class="price up" id="btc-p">$64,120</span></div>
-        <div class="market-item">ETH/USDT <span class="price up" id="eth-p">$3,450</span></div>
-        <div class="market-item">BNB/USDT <span class="price down" id="bnb-p">$580</span></div>
-        <div class="market-item">SOL/USDT <span class="price up" id="sol-p">$145</span></div>
+    <div class="counter-grid">
+        <div class="counter-card"><small>Total Volume</small><h3 id="totalVolume">$2.5M</h3></div>
+        <div class="counter-card"><small>Active Users</small><h3 id="activeUsers">12,847</h3></div>
+        <div class="counter-card"><small>Active Bots</small><h3 id="activeBots">1,234</h3></div>
+        <div class="counter-card"><small>Daily Profit</small><h3 id="dailyProfitTotal">$42,850</h3></div>
     </div>
 
-    <div id="home" class="section active">
-        <div class="card" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1000'); background-size: cover; height: 150px; display: flex; align-items: center; justify-content: center; text-align: center;">
-            <div>
-                <h2>QUANTUM ARBITRAGE</h2>
-                <p style="font-size: 12px;">Sirdoonka Macmalka ah (AI) 24/7</p>
-            </div>
-        </div>
-
-        <div class="chart-container">
-            <div id="tradingview_widget" style="height: 100%;"></div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div class="card">
-                <small color="var(--text-gray)">Trust Volume</small>
-                <h3>$2.3M+</h3>
-            </div>
-            <div class="card">
-                <small color="var(--text-gray)">Active Users</small>
-                <h3>200K+</h3>
-            </div>
-        </div>
+    <div class="chart-container">
+        <div id="tradingview_chart" style="height: 100%;"></div>
     </div>
 
-    <div id="dashboard" class="section">
-        <div class="card" style="text-align:center; border: 1px solid var(--gold);">
-            <p>Total Balance</p>
-            <h1 style="color:var(--gold); font-size: 35px;">$0.00</h1>
-        </div>
+    <div class="card" style="text-align:center; background:#8b0000;">
+        <h3>⚠️ Important Notice</h3>
+        <p style="font-size:13px;">Minimum withdrawal: $10 USDT (BEP20 only). Double-check your deposit address!</p>
+    </div>
+</div>
 
-        <div class="card">
-            <h4>Deposit (BEP20)</h4>
-            <input type="text" value="0x71C7656EC7ab88b098defB751B7401B5f6d8976F" id="w-addr" readonly>
-            <button class="btn-main" onclick="copyAddr()">Copy Address</button>
-        </div>
-
-        <div class="card">
-            <h4>Withdraw</h4>
-            <input type="number" placeholder="Amount (Min $10)">
-            <input type="password" placeholder="Payment Password">
-            <button class="btn-main" style="background:var(--danger); color:white;">Withdraw Now</button>
-        </div>
+<!-- ==================== 2. DASHBOARD SECTION ==================== -->
+<div id="dashboard" class="section">
+    <div class="balance-card">
+        <p>💰 Main Balance</p>
+        <div class="balance-amount" id="mainBalance">$0.00</div>
+        <p>Rank: <strong id="userRank">TRAINEE</strong></p>
     </div>
 
-    <div id="bots" class="section">
-        <h3>Available Bots</h3>
-        <div id="bots-list"></div>
+    <div class="card">
+        <h3><i class="fas fa-arrow-down"></i> Deposit USDT (BEP20)</h3>
+        <p style="font-size:12px; margin:10px 0;">Your personal deposit address:</p>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="depositAddress" value="0x9cecaca8d1e50788c7842e1f39af1ac56821d62d" readonly>
+            <button onclick="copyToClipboard('depositAddress')" style="background:var(--gold); border:none; padding:0 15px; border-radius:8px;"><i class="fas fa-copy"></i></button>
+        </div>
+        <p style="font-size:11px; color:var(--text-gray); margin-top:10px;">Send only USDT (BEP20) to this address</p>
     </div>
 
-    <div id="profile" class="section">
-        <div class="card" style="text-align:center;">
-            <i class="fas fa-user-circle" style="font-size:50px; color:var(--gold);"></i>
-            <h3 id="u-name">User Account</h3>
-            <p style="font-size:12px; color:var(--text-gray);">Rank: Trainee</p>
-        </div>
-        <div class="card">
-            <h4>Account Settings</h4>
-            <button class="btn-main" style="background:#333; color:white;">Security (2FA)</button>
-            <button class="btn-main" style="background:#333; color:white;" onclick="logout()">Logout</button>
-        </div>
+    <div class="card">
+        <h3><i class="fas fa-arrow-up"></i> Withdraw USDT</h3>
+        <div class="form-group"><label>Amount (USDT) - Min $10</label><input type="number" id="withdrawAmount" placeholder="0.00"></div>
+        <div class="form-group"><label>BEP20 Wallet Address</label><input type="text" id="withdrawAddress" placeholder="0x..."></div>
+        <div class="form-group"><label>2FA Code</label><input type="text" id="withdraw2FA" placeholder="000000"></div>
+        <div class="form-group"><label>Payment Password</label><input type="password" id="paymentPassword" placeholder="****"></div>
+        <button class="btn-primary" onclick="requestWithdraw()">Request Withdrawal</button>
+        <p id="withdrawMsg" style="color:var(--danger); margin-top:10px;"></p>
     </div>
+</div>
 
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="showSection('home')"><i class="fas fa-home"></i>Home</div>
-        <div class="nav-item" onclick="showSection('dashboard')"><i class="fas fa-wallet"></i>Wallet</div>
-        <div class="nav-item" onclick="showSection('bots')"><i class="fas fa-robot"></i>Bots</div>
-        <div class="nav-item" onclick="showSection('profile')"><i class="fas fa-user"></i>Profile</div>
-    </nav>
+<!-- ==================== 3. BOTS SECTION ==================== -->
+<div id="bots" class="section">
+    <h2 style="margin-bottom:20px;">🤖 AI Trading Bots (5 Months Validity)</h2>
+    <div class="grid-3" id="botsGrid"></div>
+</div>
 
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-    <script>
-        // TRADING VIEW INITIALIZATION
-        new TradingView.widget({
-            "width": "100%", "height": "100%", "symbol": "BINANCE:BTCUSDT",
-            "interval": "1", "theme": "dark", "container_id": "tradingview_widget", "hide_top_toolbar": true
-        });
+<!-- ==================== 4. MY BOT SECTION ==================== -->
+<div id="mybot" class="section">
+    <h2 style="margin-bottom:20px;">📊 My Bot Performance</h2>
+    <div class="card" id="myBotCard">
+        <div style="text-align:center;"><i class="fas fa-robot" style="font-size:48px;"></i><h3>No Active Bot</h3><p>Rent a bot to start earning daily profits!</p><button class="btn-primary" onclick="showSection('bots')">Rent Bot Now</button></div>
+    </div>
+</div>
 
-        // AUTH LOGIC
-        function handleAuth() {
-            document.getElementById('auth-overlay').style.display = 'none';
-            Swal.fire('Guul!', 'Si guul leh ayaad u gashay.', 'success');
-        }
+<!-- ==================== 5. REFERRAL SECTION ==================== -->
+<div id="referral" class="section">
+    <div class="card" style="text-align:center;">
+        <h2><i class="fas fa-users"></i> Referral Program</h2>
+        <p>Earn 10% commission when your referrals deposit funds!</p>
+        <div class="form-group"><label>Your Referral Link</label><input type="text" id="referralLink" readonly></div>
+        <button class="btn-primary" onclick="copyRefLink()">Copy Link</button>
+    </div>
+    <div class="grid-2">
+        <div class="card"><h3>Total Referrals</h3><div class="balance-amount" id="totalReferrals">0</div></div>
+        <div class="card"><h3>Referral Revenue</h3><div class="balance-amount" id="referralRevenue">$0</div></div>
+    </div>
+    <div class="card"><h3>Your Team</h3><div id="teamList"></div></div>
+</div>
 
-        // SECTION NAVIGATION
-        function showSection(id) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            window.scrollTo(0,0);
-        }
+<!-- ==================== 6. LEADERBOARD SECTION ==================== -->
+<div id="leaderboard" class="section">
+    <h2 style="margin-bottom:20px;">🏆 Leadership Ranks</h2>
+    <div class="grid-4" id="ranksGrid"></div>
+    <div class="card">
+        <h3>Your Rank Progress</h3>
+        <div class="progress-container"><div class="progress-fill" id="rankProgressFill" style="width:0%"></div></div>
+        <p id="rankProgressText">0/20 qualified referrals to reach SILVER</p>
+    </div>
+    <div class="card"><h3>🏅 Top Users</h3><div id="leaderboardList"></div></div>
+</div>
 
-        // LIVE PRICE SIMULATOR (Real-time feeling)
-        setInterval(() => {
-            const btc = 64000 + Math.random() * 200;
-            document.getElementById('btc-p').innerText = '$' + btc.toFixed(2);
-        }, 3000);
+<!-- ==================== 7. PROFILE SECTION ==================== -->
+<div id="profile" class="section">
+    <div class="grid-2">
+        <div class="card"><h3>👤 User Info</h3><p><strong>Name:</strong> <span id="profileName">Guest</span></p><p><strong>Email:</strong> <span id="profileEmail">Not logged in</span></p><p><strong>User ID:</strong> <span id="profileUserId">-</span></p><p><strong>Rank:</strong> <span id="profileRank">TRAINEE</span></p></div>
+        <div class="card"><h3>🔐 Security</h3><button class="btn-outline" onclick="setup2FA()"><i class="fas fa-mobile-alt"></i> Setup Google Authenticator</button><button class="btn-outline" onclick="setPaymentPass()"><i class="fas fa-key"></i> Set Payment Password</button></div>
+    </div>
+    <div class="card"><h3>🪪 KYC Verification</h3><input type="text" id="kycName" placeholder="Full Name"><input type="text" id="kycId" placeholder="ID Number"><button class="btn-primary" onclick="submitKYC()">Submit KYC</button><p id="kycStatus"></p></div>
+    <div class="card"><h3>💰 Commission Withdrawal</h3><input type="number" id="commWithdrawAmount" placeholder="Amount (Min $10)"><input type="text" id="commWithdrawAddress" placeholder="BEP20 Address"><button class="btn-primary" onclick="withdrawCommission()">Withdraw Commission</button><p id="commWithdrawMsg"></p></div>
+</div>
 
-        // BOTS DATA
-        const bots = [
-            { name: "Nano Bot", price: 50, profit: 1.66 },
-            { name: "Kaspa Bot", price: 100, profit: 3.33 },
-            { name: "Cardano Bot", price: 400, profit: 13.33 }
-        ];
+<!-- ==================== 8. HISTORY SECTION ==================== -->
+<div id="history" class="section">
+    <h2 style="margin-bottom:20px;">📜 Transaction History</h2>
+    <div class="card"><div style="overflow-x:auto;"><table><thead><tr><th>Type</th><th>Amount</th><th>TXID</th><th>Status</th><th>Date</th></tr></thead><tbody id="historyBody"></tbody></table></div></div>
+</div>
 
-        document.getElementById('bots-list').innerHTML = bots.map(b => `
-            <div class="card">
-                <div style="display:flex; justify-content:space-between;">
-                    <b>${b.name}</b>
-                    <span style="color:var(--gold)">$${b.price}</span>
-                </div>
-                <p style="font-size:12px; margin:10px 0;">Daily Profit: <span class="up">+$${b.profit}</span></p>
-                <button class="btn-main" onclick="Swal.fire('Balance Low', 'Fadlan lacag shubo', 'error')">Rent Bot</button>
+<!-- ==================== 9. TERMS SECTION ==================== -->
+<div id="terms" class="section">
+    <div class="card"><h2>📜 Terms & Conditions</h2><ul style="padding-left:20px; margin-top:15px;"><li>One account per user — no multiple accounts allowed.</li><li>Minimum deposit: $30 USDT (BEP20).</li><li>Minimum withdrawal: $10 USDT.</li><li>All deposits are final — no refunds.</li><li>KYC may be required for withdrawals over $1000.</li><li>⚠️ Trading involves risk. No profit guarantee.</li></ul></div>
+</div>
+
+<!-- ==================== 10. FAQ SECTION ==================== -->
+<div id="faq" class="section">
+    <div class="card"><h2>❓ Frequently Asked Questions</h2><p><strong>How does the AI bot work?</strong><br>AI scans multiple exchanges for price differences and executes arbitrage trades automatically.</p><p><strong>Is my money safe?</strong><br>Yes, funds are stored in secured wallets with 2FA protection.</p><p><strong>What is minimum deposit?</strong><br>$30 USDT via BEP20 network.</p><p><strong>How long do withdrawals take?</strong><br>Within 24 hours after admin approval.</p></div>
+</div>
+
+<!-- ==================== 11. SUPPORT SECTION ==================== -->
+<div id="support" class="section">
+    <div class="card"><h2>💬 Contact Support</h2><textarea id="supportMsg" rows="4" placeholder="Type your message..."></textarea><button class="btn-primary" onclick="sendSupport()">Send Message</button><p id="supportMsgResult"></p></div>
+</div>
+
+<!-- ==================== 12. ADMIN SECTION ==================== -->
+<div id="admin" class="section">
+    <div class="grid-2">
+        <div class="card"><h3>👥 All Users</h3><div id="adminUsersList"></div></div>
+        <div class="card"><h3>⏳ Pending Withdrawals</h3><div id="adminWithdrawalsList"></div></div>
+    </div>
+</div>
+
+<!-- BOTTOM NAVIGATION (MOBILE) -->
+<div class="bottom-nav">
+    <div class="nav-btn" onclick="showSection('home')"><i class="fas fa-home"></i><span>Home</span></div>
+    <div class="nav-btn" onclick="showSection('dashboard')"><i class="fas fa-chart-line"></i><span>Dashboard</span></div>
+    <div class="nav-btn" onclick="showSection('bots')"><i class="fas fa-robot"></i><span>Bots</span></div>
+    <div class="nav-btn" onclick="showSection('profile')"><i class="fas fa-user"></i><span>Profile</span></div>
+    <div class="nav-btn" onclick="showSection('history')"><i class="fas fa-history"></i><span>History</span></div>
+</div>
+
+<script>
+    // ==================== DATA ====================
+    const API_URL = "https://hakim-arbitrage-v8.up.railway.app";
+    let currentUser = null;
+    let token = localStorage.getItem("token");
+
+    // Bots Data
+    const bots = [
+        { id: 1, name: "Nano Bot", price: 49.99, daily: 1.66, commission: 5.00 },
+        { id: 2, name: "Kaspa Bot", price: 99.99, daily: 3.33, commission: 9.00 },
+        { id: 3, name: "Aleph Zero Bot", price: 199.99, daily: 6.66, commission: 16.00 },
+        { id: 4, name: "Cardano Bot", price: 399.99, daily: 13.33, commission: 22.50 },
+        { id: 5, name: "Moonbeam Bot", price: 499.99, daily: 16.66, commission: 28.00 },
+        { id: 6, name: "Polkadot Bot", price: 599.99, daily: 20.00, commission: 36.00 }
+    ];
+
+    // Ranks Data
+    const ranks = [
+        { name: "SILVER", salary: 400, requirement: "20 referrals ($99.99+ bot)", icon: "🥈", directComm: 10, indirectComm: 2 },
+        { name: "GOLD", salary: 1000, requirement: "5 Silver Leaders", icon: "🥇", directComm: 12, indirectComm: 3 },
+        { name: "DIAMOND", salary: 2000, requirement: "10 Gold Leaders", icon: "💎", directComm: 15, indirectComm: 5 },
+        { name: "MANAGER", salary: 5000, requirement: "5 Diamond Leaders + Office", icon: "👑", directComm: 20, indirectComm: 10 }
+    ];
+
+    // ==================== RENDER FUNCTIONS ====================
+    function renderBots() {
+        document.getElementById("botsGrid").innerHTML = bots.map(b => `
+            <div class="bot-card">
+                <div class="tag">5 Months Validity</div>
+                <h3 style="margin:10px 0;">${b.name}</h3>
+                <div class="bot-price">$${b.price}</div>
+                <p>Daily Profit: <span style="color:var(--success);">+$${b.daily}</span></p>
+                <p style="font-size:12px; color:var(--text-gray);">Referral Commission: $${b.commission}</p>
+                <button class="btn-primary" onclick="rentBot('${b.name}', ${b.price}, ${b.commission}, ${b.daily})">Rent Bot</button>
             </div>
         `).join('');
+    }
 
-        function copyAddr() {
-            const copyText = document.getElementById("w-addr");
-            copyText.select();
-            document.execCommand("copy");
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'La koobiyeeyay', showConfirmButton: false, timer: 1500 });
+    function renderRanks() {
+        document.getElementById("ranksGrid").innerHTML = ranks.map(r => `
+            <div class="card" style="text-align:center;">
+                <div style="font-size:36px;">${r.icon}</div>
+                <h3>${r.name}</h3>
+                <div class="balance-amount" style="font-size:24px;">$${r.salary}/month</div>
+                <p style="font-size:11px;">${r.requirement}</p>
+                <p style="font-size:10px;">Direct: ${r.directComm}% | Indirect: ${r.indirectComm}%</p>
+            </div>
+        `).join('');
+    }
+
+    // ==================== AUTH ====================
+    async function register() {
+        const name = document.getElementById("regName")?.value;
+        const email = document.getElementById("regEmail")?.value;
+        const password = document.getElementById("regPass")?.value;
+        const ref = document.getElementById("regRef")?.value;
+        if(!name || !email || !password) { alert("Fill all fields"); return; }
+        const res = await fetch(API_URL + "/api/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, password, referralCode: ref }) });
+        const data = await res.json();
+        if(data.success) { localStorage.setItem("token", data.token); token = data.token; currentUser = data.user; loadUserData(); showSection('dashboard'); Swal.fire("Success", "Account created!", "success"); }
+        else alert(data.error);
+    }
+
+    async function login() {
+        const email = document.getElementById("loginEmail")?.value;
+        const password = document.getElementById("loginPass")?.value;
+        if(!email || !password) { alert("Enter email and password"); return; }
+        const res = await fetch(API_URL + "/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
+        const data = await res.json();
+        if(data.token) { localStorage.setItem("token", data.token); token = data.token; currentUser = data.user; loadUserData(); showSection('dashboard'); Swal.fire("Welcome!", "Login successful", "success"); }
+        else alert(data.error);
+    }
+
+    async function loadUserData() {
+        if(!token) return;
+        const res = await fetch(API_URL + "/api/user", { headers: { "Authorization": `Bearer ${token}` } });
+        const user = await res.json();
+        currentUser = user;
+        document.getElementById("mainBalance").innerText = `$${user.balance?.toFixed(2) || 0}`;
+        document.getElementById("userRank").innerText = user.rank || "TRAINEE";
+        document.getElementById("profileName").innerText = user.name || "Guest";
+        document.getElementById("profileEmail").innerText = user.email || "Not logged in";
+        document.getElementById("profileUserId").innerText = user.userId || "-";
+        document.getElementById("profileRank").innerText = user.rank || "TRAINEE";
+        document.getElementById("referralLink").value = `${window.location.origin}?ref=${user.referralCode}`;
+        loadMyBot();
+    }
+
+    // ==================== RENT BOT ====================
+    async function rentBot(botName, price, commission, dailyProfit) {
+        if(!currentUser) { alert("Please login first"); return; }
+        if(currentUser.balance < price) { Swal.fire("Error", `Insufficient balance! Need $${price}`, "error"); return; }
+        const res = await fetch(API_URL + "/api/rent-bot", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ botName, botPrice: price, botCommission: commission, botDailyProfit: dailyProfit }) });
+        const data = await res.json();
+        if(data.success) { Swal.fire("Success", `${botName} activated for 5 months!`, "success"); loadUserData(); loadMyBot(); }
+        else alert(data.error);
+    }
+
+    async function loadMyBot() {
+        const res = await fetch(API_URL + "/api/bot-info", { headers: { "Authorization": `Bearer ${token}` } });
+        const data = await res.json();
+        if(data.status === "active") {
+            const progress = (data.totalProfitEarned / (data.dailyProfit * 150)) * 100;
+            document.getElementById("myBotCard").innerHTML = `
+                <div style="text-align:center;">
+                    <i class="fas fa-robot" style="font-size:48px;"></i>
+                    <h3>${data.plan}</h3>
+                    <p>Daily Profit: <span style="color:var(--success);">+$${data.dailyProfit}</span></p>
+                    <p>Total Earned: <strong>$${data.totalProfitEarned?.toFixed(2) || 0}</strong></p>
+                    <p>Days Remaining: <strong>${data.daysRemaining}</strong> days</p>
+                    <div class="progress-container"><div class="progress-fill" style="width:${progress}%"></div></div>
+                    <p>Expires: ${new Date(data.expiry).toLocaleDateString()}</p>
+                </div>
+            `;
+        } else {
+            document.getElementById("myBotCard").innerHTML = `<div style="text-align:center;"><i class="fas fa-robot" style="font-size:48px;"></i><h3>No Active Bot</h3><button class="btn-primary" onclick="showSection('bots')">Rent Bot Now</button></div>`;
         }
-    </script>
+    }
+
+    // ==================== WITHDRAW ====================
+    async function requestWithdraw() {
+        const amount = parseFloat(document.getElementById("withdrawAmount").value);
+        const address = document.getElementById("withdrawAddress").value;
+        const twoFACode = document.getElementById("withdraw2FA").value;
+        const paymentPassword = document.getElementById("paymentPassword").value;
+        if(!amount || amount < 10) { document.getElementById("withdrawMsg").innerText = "Minimum $10"; return; }
+        const res = await fetch(API_URL + "/api/withdraw", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify({ amount, address, twoFACode, paymentPassword }) });
+        const data = await res.json();
+        if(data.success) { Swal.fire("Submitted", data.message, "success"); loadUserData(); }
+        else document.getElementById("withdrawMsg").innerText = data.error;
+    }
+
+    // ==================== UTILITIES ====================
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'bots') renderBots();
+        if(id === 'leaderboard') renderRanks();
+    }
+
+    function copyToClipboard(id) { const text = document.getElementById(id).value; navigator.clipboard.writeText(text); Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Copied!', showConfirmButton: false, timer: 1500 }); }
+    function copyRefLink() { navigator.clipboard.writeText(document.getElementById("referralLink").value); alert("Link copied!"); }
+    function setup2FA() { alert("2FA setup - QR code would appear here"); }
+    function setPaymentPass() { alert("Set payment password - verify via email"); }
+    function submitKYC() { alert("KYC submitted for review"); }
+    function withdrawCommission() { alert("Commission withdrawal request submitted"); }
+    function sendSupport() { alert("Message sent to support!"); }
+
+    // TradingView Chart
+    new TradingView.widget({
+        "container_id": "tradingview_chart",
+        "width": "100%",
+        "height": "100%",
+        "symbol": "BINANCE:BTCUSDT",
+        "interval": "5",
+        "timezone": "Etc/UTC",
+        "theme": "dark",
+        "style": "1",
+        "locale": "en",
+        "hide_top_toolbar": true,
+        "save_image": false,
+        "autosize": true
+    });
+
+    // Hero Slider
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    if(slides.length) {
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 5000);
+    }
+
+    // Check if logged in
+    if(token) { loadUserData(); showSection('dashboard'); } else { showSection('home'); }
+    renderBots(); renderRanks();
+</script>
 </body>
 </html>
