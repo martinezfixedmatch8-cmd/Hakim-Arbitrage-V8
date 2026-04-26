@@ -3,217 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HAKIM AI | Full Quantum Arbitrage</title>
+    <title>HAKIM AI | Professional Quantum Arbitrage</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --gold: #f3ba2f; --dark-bg: #0b0e11; --card-bg: #1e2329;
-            --text-gray: #848e9c; --success: #0ecb81; --danger: #f6465d;
+            --text-gray: #848e9c; --success: #0ecb81; --danger: #f6465d; --nav-bg: #161a1e;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--dark-bg); color: white; overflow-x: hidden; padding-bottom: 80px; }
+        body { background-color: var(--dark-bg); color: white; overflow-x: hidden; padding-bottom: 70px; }
 
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+        /* AUTH MODAL */
+        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark-bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: var(--card-bg); padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid #333; }
 
         /* HEADER */
-        .header { background: #161a1e; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; z-index: 1000; top: 0; border-bottom: 1px solid #333; }
-        .logo { font-size: 22px; font-weight: 800; color: white; text-decoration: none; } .logo span { color: var(--gold); }
+        .header { background: var(--nav-bg); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; z-index: 1000; top: 0; border-bottom: 1px solid #333; }
+        .logo { font-size: 22px; font-weight: 800; color: white; } .logo span { color: var(--gold); }
+        .nav-links { display: flex; gap: 15px; list-style: none; }
+        .nav-links li { cursor: pointer; font-size: 14px; color: var(--text-gray); transition: 0.3s; }
+        .nav-links li:hover, .nav-links li.active { color: var(--gold); }
 
-        /* SECTIONS CONTROL */
-        .section { display: none; padding: 80px 5% 20px; animation: fadeIn 0.4s ease; }
+        /* LIVE MARKET STRIP */
+        .market-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px 5%; margin-top: 70px; background: #161a1e; }
+        .market-item { text-align: center; font-size: 12px; border-right: 1px solid #333; }
+        .market-item:last-child { border: none; }
+        .price { display: block; font-weight: bold; margin-top: 5px; }
+
+        /* SECTIONS */
+        .section { display: none; padding: 20px 5%; animation: fadeIn 0.4s ease; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* HERO SLIDER */
-        .hero-slider { position: relative; width: 100%; height: 200px; border-radius: 15px; overflow: hidden; margin-bottom: 20px; }
-        .slide { width: 100%; height: 100%; position: absolute; opacity: 0; transition: 1s; background-size: cover; background-position: center; }
-        .slide.active { opacity: 1; }
-        .slide-overlay { background: rgba(0,0,0,0.6); width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-
-        /* CARDS & TABLES */
+        /* CARDS */
         .card { background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; }
-        .balance-card { background: linear-gradient(135deg, #2b3139 0%, #161a1e 100%); text-align: center; padding: 30px; border: 1px solid var(--gold); }
-        .balance-card h1 { color: var(--gold); font-size: 35px; margin: 10px 0; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th { color: var(--text-gray); text-align: left; padding: 10px; border-bottom: 1px solid #333; }
-        td { padding: 12px 10px; border-bottom: 1px solid #222; }
+        .btn-main { width: 100%; padding: 14px; border-radius: 8px; border: none; background: var(--gold); color: black; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #2b3139; color: white; margin-top: 10px; }
 
-        /* UTILITIES */
-        .up { color: var(--success); } .down { color: var(--danger); }
-        .btn-main { width: 100%; padding: 14px; border-radius: 8px; border: none; background: var(--gold); color: black; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-main:active { transform: scale(0.98); }
-        .input-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #2b3139; color: white; margin-top: 5px; }
-        .tag { background: rgba(243, 186, 47, 0.1); color: var(--gold); padding: 4px 8px; border-radius: 4px; font-size: 10px; }
+        /* TRADING VIEW */
+        .chart-container { height: 400px; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #333; margin: 15px 0; }
 
-        /* BOTTOM NAVIGATION */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #161a1e; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; z-index: 1000; }
-        .nav-item { text-align: center; color: var(--text-gray); font-size: 10px; cursor: pointer; transition: 0.3s; }
+        /* BOTTOM NAV */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; z-index: 1000; }
+        .nav-item { text-align: center; color: var(--text-gray); font-size: 10px; cursor: pointer; }
         .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
         .nav-item.active { color: var(--gold); }
-
-        /* PROGRESS */
-        .progress-bg { background: #333; border-radius: 10px; height: 10px; margin: 10px 0; position: relative; }
-        .progress-fill { background: var(--gold); height: 100%; border-radius: 10px; transition: 1s; }
     </style>
 </head>
 <body>
 
+    <div id="auth-overlay">
+        <div class="auth-card" id="login-form">
+            <h2 style="text-align:center; margin-bottom:20px;">HAKIM <span>AI</span> Login</h2>
+            <input type="email" placeholder="Email Address" id="l-email">
+            <input type="password" placeholder="Password" id="l-pass">
+            <button class="btn-main" onclick="handleAuth()">Login Now</button>
+            <p style="font-size:12px; text-align:center; margin-top:15px; color:var(--text-gray);">
+                Account ma lihid? <span style="color:var(--gold); cursor:pointer;" onclick="toggleAuth()">Register</span>
+            </p>
+        </div>
+    </div>
+
     <header class="header">
-        <a href="#" class="logo">HAKIM <span>AI</span></a>
-        <div id="user-status" style="font-size: 12px; color: var(--gold);"><i class="fas fa-crown"></i> Silver</div>
+        <div class="logo">HAKIM <span>AI</span></div>
+        <ul class="nav-links">
+            <li onclick="showSection('home')" class="active">Home</li>
+            <li onclick="showSection('bots')">Bots</li>
+            <li onclick="showSection('leadership')">Ranks</li>
+        </ul>
     </header>
 
+    <div class="market-strip">
+        <div class="market-item">BTC/USDT <span class="price up" id="btc-p">$64,120</span></div>
+        <div class="market-item">ETH/USDT <span class="price up" id="eth-p">$3,450</span></div>
+        <div class="market-item">BNB/USDT <span class="price down" id="bnb-p">$580</span></div>
+        <div class="market-item">SOL/USDT <span class="price up" id="sol-p">$145</span></div>
+    </div>
+
     <div id="home" class="section active">
-        <div class="hero-slider">
-            <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000');">
-                <div class="slide-overlay"><h2>QUANTUM ARBITRAGE</h2><p>AI-Powered Crypto Profits</p></div>
-            </div>
-            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1621761126064-fdd17872927a?q=80&w=1000');">
-                <div class="slide-overlay"><h2>SECURE & FAST</h2><p>Instant BSC Transactions</p></div>
+        <div class="card" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1000'); background-size: cover; height: 150px; display: flex; align-items: center; justify-content: center; text-align: center;">
+            <div>
+                <h2>QUANTUM ARBITRAGE</h2>
+                <p style="font-size: 12px;">Sirdoonka Macmalka ah (AI) 24/7</p>
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
-            <div class="card" style="padding:15px;"><small>Trust Volume</small><h3 id="trustVol">$2,345,670</h3></div>
-            <div class="card" style="padding:15px;"><small>Active Bots</small><h3>45,120</h3></div>
-            <div class="card" style="padding:15px;"><small>Daily Payouts</small><h3 class="up">$12,450</h3></div>
-            <div class="card" style="padding:15px;"><small>Online Users</small><h3>1,420</h3></div>
-        </div>
-
-        <div class="card" style="padding: 0; overflow: hidden; height: 350px;">
+        <div class="chart-container">
             <div id="tradingview_widget" style="height: 100%;"></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="card">
+                <small color="var(--text-gray)">Trust Volume</small>
+                <h3>$2.3M+</h3>
+            </div>
+            <div class="card">
+                <small color="var(--text-gray)">Active Users</small>
+                <h3>200K+</h3>
+            </div>
         </div>
     </div>
 
     <div id="dashboard" class="section">
-        <div class="card balance-card">
-            <p>Main Balance</p>
-            <h1>$1,250.45</h1>
-            <div style="display: flex; justify-content: center; gap: 15px;">
-                <span class="tag">USDT (BEP20)</span>
-                <span class="tag" style="background:rgba(14, 203, 129, 0.1); color:var(--success);">Active</span>
-            </div>
+        <div class="card" style="text-align:center; border: 1px solid var(--gold);">
+            <p>Total Balance</p>
+            <h1 style="color:var(--gold); font-size: 35px;">$0.00</h1>
         </div>
 
         <div class="card">
-            <h4><i class="fas fa-arrow-down" style="color:var(--success)"></i> Deposit Funds</h4>
-            <p style="font-size: 11px; color: var(--text-gray); margin: 10px 0;">Kaliya u soo dir USDT (BEP20) address-kan:</p>
-            <div style="display:flex; gap:10px;">
-                <input type="text" value="0x71C7656EC7ab88b098defB751B7401B5f6d8976F" id="walletAddr" class="input-box" readonly>
-                <button onclick="copyText('walletAddr')" style="background:var(--gold); border:none; padding:10px; border-radius:8px; margin-top:5px;"><i class="fas fa-copy"></i></button>
-            </div>
+            <h4>Deposit (BEP20)</h4>
+            <input type="text" value="0x71C7656EC7ab88b098defB751B7401B5f6d8976F" id="w-addr" readonly>
+            <button class="btn-main" onclick="copyAddr()">Copy Address</button>
         </div>
 
         <div class="card">
-            <h4><i class="fas fa-arrow-up" style="color:var(--danger)"></i> Withdraw</h4>
-            <div style="margin-top:10px;">
-                <label style="font-size:12px;">Amount ($)</label>
-                <input type="number" class="input-box" placeholder="Min $10">
-                <label style="font-size:12px; margin-top:10px; display:block;">Payment Password</label>
-                <input type="password" class="input-box" placeholder="****">
-                <button class="btn-main" style="margin-top:15px;">Send Withdrawal</button>
-            </div>
+            <h4>Withdraw</h4>
+            <input type="number" placeholder="Amount (Min $10)">
+            <input type="password" placeholder="Payment Password">
+            <button class="btn-main" style="background:var(--danger); color:white;">Withdraw Now</button>
         </div>
     </div>
 
     <div id="bots" class="section">
-        <h3 style="margin-bottom:15px;">Kireyso Arbitrage Bot</h3>
-        <div id="botsContainer"></div>
-    </div>
-
-    <div id="my-bot" class="section">
-        <h3>Bot-yada ii shaqaynaya</h3>
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h4>Kaspa Bot</h4>
-                <span class="tag" style="color:var(--success)">Running</span>
-            </div>
-            <div style="margin:15px 0;">
-                <p style="font-size:13px;">Daily Profit: <b class="up">+$3.33</b></p>
-                <p style="font-size:13px;">Total Earned: <b class="up">$145.20</b></p>
-            </div>
-            <p style="font-size:11px; color:var(--text-gray);">Progress (5 Months Plan):</p>
-            <div class="progress-bg"><div class="progress-fill" style="width: 40%;"></div></div>
-            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-gray);">
-                <span>Maalinta 60-aad</span>
-                <span>90 Maalmood u dhiman</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="leaderboard" class="section">
-        <h3>Leadership Ranks</h3>
-        <div class="card">
-            <div style="display:flex; justify-content:space-between;">
-                <b>CURRENT RANK: <span style="color:var(--gold)">SILVER</span></b>
-                <span class="tag">$400 Salary</span>
-            </div>
-            <div class="progress-bg" style="margin-top:15px;"><div class="progress-fill" style="width: 65%;"></div></div>
-            <p style="font-size:11px;">Next Rank: <b>GOLD</b> (Need 7 more referrals)</p>
-        </div>
-
-        <div class="card" style="padding:10px;">
-            <h4 style="padding:10px;">Top 20 Investors</h4>
-            <table>
-                <tr style="background:#161a1e;">
-                    <th>User</th>
-                    <th>Balance</th>
-                    <th>Rank</th>
-                </tr>
-                <tr>
-                    <td>Shueb ***</td>
-                    <td class="up">$12,450</td>
-                    <td><span class="tag">Manager</span></td>
-                </tr>
-            </table>
-        </div>
-    </div>
-
-    <div id="history" class="section">
-        <h3>Transaction History</h3>
-        <div class="card" style="padding:0;">
-            <table>
-                <tr>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                </tr>
-                <tr>
-                    <td>Deposit</td>
-                    <td class="up">+$500.00</td>
-                    <td><span class="tag" style="color:var(--success)">Success</span></td>
-                </tr>
-                <tr>
-                    <td>Withdraw</td>
-                    <td class="down">-$50.00</td>
-                    <td><span class="tag" style="color:var(--gold)">Pending</span></td>
-                </tr>
-            </table>
-        </div>
+        <h3>Available Bots</h3>
+        <div id="bots-list"></div>
     </div>
 
     <div id="profile" class="section">
         <div class="card" style="text-align:center;">
             <i class="fas fa-user-circle" style="font-size:50px; color:var(--gold);"></i>
-            <h3 style="margin-top:10px;">Shueb Abdullahi</h3>
-            <p style="font-size:12px; color:var(--text-gray);">ID: 887261 | Rank: Silver</p>
+            <h3 id="u-name">User Account</h3>
+            <p style="font-size:12px; color:var(--text-gray);">Rank: Trainee</p>
         </div>
-
         <div class="card">
-            <h4>KYC Verification</h4>
-            <p style="font-size:11px; margin-bottom:10px;">Geli sawirka ID-gaaga si aad u xaqiijiso akoonka.</p>
-            <input type="file" class="input-box" style="font-size:12px;">
-            <button class="btn-main" style="margin-top:10px; background:#333; color:white;">Submit KYC</button>
-        </div>
-
-        <div class="card">
-            <h4>Security</h4>
-            <button class="btn-main" style="margin-top:10px; background:#161a1e; border:1px solid #444; color:white;">Setup 2FA (Google)</button>
-            <button class="btn-main" style="margin-top:10px; background:#161a1e; border:1px solid #444; color:white;">Change Pay Password</button>
+            <h4>Account Settings</h4>
+            <button class="btn-main" style="background:#333; color:white;">Security (2FA)</button>
+            <button class="btn-main" style="background:#333; color:white;" onclick="logout()">Logout</button>
         </div>
     </div>
 
@@ -221,67 +147,60 @@
         <div class="nav-item active" onclick="showSection('home')"><i class="fas fa-home"></i>Home</div>
         <div class="nav-item" onclick="showSection('dashboard')"><i class="fas fa-wallet"></i>Wallet</div>
         <div class="nav-item" onclick="showSection('bots')"><i class="fas fa-robot"></i>Bots</div>
-        <div class="nav-item" onclick="showSection('history')"><i class="fas fa-history"></i>History</div>
         <div class="nav-item" onclick="showSection('profile')"><i class="fas fa-user"></i>Profile</div>
     </nav>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // TRADING VIEW
+        // TRADING VIEW INITIALIZATION
         new TradingView.widget({
             "width": "100%", "height": "100%", "symbol": "BINANCE:BTCUSDT",
-            "interval": "1", "theme": "dark", "style": "1", "container_id": "tradingview_widget", "hide_top_toolbar": true
+            "interval": "1", "theme": "dark", "container_id": "tradingview_widget", "hide_top_toolbar": true
         });
+
+        // AUTH LOGIC
+        function handleAuth() {
+            document.getElementById('auth-overlay').style.display = 'none';
+            Swal.fire('Guul!', 'Si guul leh ayaad u gashay.', 'success');
+        }
 
         // SECTION NAVIGATION
         function showSection(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            event.currentTarget.classList.add('active');
             window.scrollTo(0,0);
         }
 
-        // SLIDER
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
+        // LIVE PRICE SIMULATOR (Real-time feeling)
         setInterval(() => {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }, 4000);
+            const btc = 64000 + Math.random() * 200;
+            document.getElementById('btc-p').innerText = '$' + btc.toFixed(2);
+        }, 3000);
 
-        // BOTS RENDER
+        // BOTS DATA
         const bots = [
-            { name: "Nano Bot", price: 49.99, daily: 1.66 },
-            { name: "Kaspa Bot", price: 99.99, daily: 3.33 },
-            { name: "Aleph Zero", price: 199.99, daily: 6.66 },
-            { name: "Cardano Bot", price: 399.99, daily: 13.33 },
-            { name: "Moonbeam", price: 499.99, daily: 16.66 },
-            { name: "Polkadot Bot", price: 599.99, daily: 20.00 }
+            { name: "Nano Bot", price: 50, profit: 1.66 },
+            { name: "Kaspa Bot", price: 100, profit: 3.33 },
+            { name: "Cardano Bot", price: 400, profit: 13.33 }
         ];
 
-        document.getElementById('botsContainer').innerHTML = bots.map(b => `
+        document.getElementById('bots-list').innerHTML = bots.map(b => `
             <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4>${b.name}</h4>
-                    <span class="tag">150 Days</span>
+                <div style="display:flex; justify-content:space-between;">
+                    <b>${b.name}</b>
+                    <span style="color:var(--gold)">$${b.price}</span>
                 </div>
-                <h2 style="margin:10px 0;">$${b.price}</h2>
-                <p style="font-size:13px; color:var(--text-gray);">Daily Profit: <b class="up">+$${b.daily}</b></p>
-                <button class="btn-main" style="margin-top:15px;" onclick="rentBot('${b.name}')">Rent Bot Now</button>
+                <p style="font-size:12px; margin:10px 0;">Daily Profit: <span class="up">+$${b.profit}</span></p>
+                <button class="btn-main" onclick="Swal.fire('Balance Low', 'Fadlan lacag shubo', 'error')">Rent Bot</button>
             </div>
         `).join('');
 
-        function rentBot(name) {
-            Swal.fire('Guul!', `${name} si guul leh ayaad u kireysatay.`, 'success');
-        }
-
-        function copyText(id) {
-            const input = document.getElementById(id);
-            input.select();
+        function copyAddr() {
+            const copyText = document.getElementById("w-addr");
+            copyText.select();
             document.execCommand("copy");
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'La koobiyeeyay!', showConfirmButton: false, timer: 1500 });
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'La koobiyeeyay', showConfirmButton: false, timer: 1500 });
         }
     </script>
 </body>
