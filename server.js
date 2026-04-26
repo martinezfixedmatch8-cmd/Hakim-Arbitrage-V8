@@ -65,32 +65,16 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model("User", userSchema);
 
-const adminSchema = new mongoose.Schema({
-  email: String,
-  password: String
-});
+const adminSchema = new mongoose.Schema({ email: String, password: String });
 const Admin = mongoose.model("Admin", adminSchema);
 
-const announcementSchema = new mongoose.Schema({
-  title: String,
-  message: String,
-  createdAt: { type: Date, default: Date.now }
-});
+const announcementSchema = new mongoose.Schema({ title: String, message: String, createdAt: { type: Date, default: Date.now } });
 const Announcement = mongoose.model("Announcement", announcementSchema);
 
-const complaintSchema = new mongoose.Schema({
-  user: String,
-  message: String,
-  createdAt: { type: Date, default: Date.now }
-});
+const complaintSchema = new mongoose.Schema({ user: String, message: String, createdAt: { type: Date, default: Date.now } });
 const Complaint = mongoose.model("Complaint", complaintSchema);
 
-const kycSchema = new mongoose.Schema({
-  userId: String,
-  file: String,
-  status: { type: String, default: "pending" },
-  createdAt: { type: Date, default: Date.now }
-});
+const kycSchema = new mongoose.Schema({ userId: String, file: String, status: { type: String, default: "pending" }, createdAt: { type: Date, default: Date.now } });
 const KYC = mongoose.model("KYC", kycSchema);
 
 // ==================== EMAIL ====================
@@ -124,19 +108,6 @@ async function generateTRC20Wallet() {
   } catch (err) {
     return { address: "TK6rVADXttcYhbzgyd1bRUmHCcwkrfm6m9", privateKey: "dummy" };
   }
-}
-
-// ==================== BINANCE AUTO-FORWARD ====================
-async function forwardToBinance(userId, amount, address) {
-  if (!process.env.BINANCE_API_KEY_FORWARD || process.env.BINANCE_API_KEY_FORWARD === 'your_binance_api_key_here') return;
-  const timestamp = Date.now();
-  const queryString = `coin=USDT&amount=${amount}&address=${address}&timestamp=${timestamp}`;
-  const signature = crypto.createHmac('sha256', process.env.BINANCE_SECRET_KEY_FORWARD).update(queryString).digest('hex');
-  await axios.post("https://api.binance.com/sapi/v1/capital/withdraw/apply", null, {
-    params: { coin: "USDT", amount, address, timestamp, signature },
-    headers: { "X-MBX-APIKEY": process.env.BINANCE_API_KEY_FORWARD }
-  });
-  await sendTelegramAlert(`🔄 Auto-forward: $${amount} from ${userId} to Binance`);
 }
 
 // ==================== RANK UPDATE ====================
@@ -247,12 +218,6 @@ app.post("/api/deposit", async (req, res) => {
   await updateUserRank(userId);
   await sendTelegramAlert(`📥 Deposit: $${amount} by ${user.email} (TXID: ${txid})`);
   res.json({ success: true, message: "Deposit recorded" });
-});
-
-app.post("/api/deposit/forward", async (req, res) => {
-  const { userId, amount, address } = req.body;
-  await forwardToBinance(userId, amount, address);
-  res.json({ success: true, message: "Forwarded to Binance" });
 });
 
 // ==================== DEPOSIT MONITORING (BSCScan) ====================
@@ -445,9 +410,8 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
-// Root route
 app.get("/", (req, res) => {
-  res.json({ status: "OK", message: "Hakim Arbitrage API is running", endpoints: { health: "/api/health", register: "/api/auth/register", login: "/api/auth/login", users: "/api/admin/users", announcements: "/api/announcements" } });
+  res.json({ status: "OK", message: "Hakim Arbitrage API is running" });
 });
 
 // ==================== SERVER RUN ====================
