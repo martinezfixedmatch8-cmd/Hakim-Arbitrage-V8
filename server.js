@@ -1,402 +1,396 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
-const axios = require("axios");
-const speakeasy = require("speakeasy");
-const crypto = require("crypto");
-const { Web3 } = require("web3");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Hakim AI Arbitrage</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Poppins',sans-serif; background:#05070a; color:#FFD700; overflow-x:hidden; }
+  
+  /* Particles Canvas */
+  .particles { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
+  
+  /* Navbar */
+  nav { background:rgba(17,17,17,0.9); backdrop-filter:blur(10px); padding:15px 20px; display:flex; justify-content:space-between; align-items:center; position:fixed; width:100%; top:0; z-index:1000; flex-wrap:wrap; gap:10px; }
+  nav a { color:#FFD700; margin:0 8px; text-decoration:none; font-weight:bold; transition:0.3s; font-size:14px; }
+  nav a:hover { color:#fff; transform:scale(1.1); }
+  
+  /* Hero Section */
+  .hero { height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; color:#fff; animation:fadeIn 2s ease; background:linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1200'); background-size:cover; background-position:center; position:relative; }
+  .hero h1 { font-size:3em; margin:0; z-index:1; }
+  .hero p { font-size:1.2em; z-index:1; margin:15px 0; }
+  .hero button { z-index:1; }
+  
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  
+  /* Container */
+  .container { padding:100px 20px 30px; max-width:1000px; margin:auto; }
+  
+  /* Cards */
+  .card { background:rgba(34,34,34,0.6); backdrop-filter:blur(10px); padding:25px; border-radius:15px; margin:20px 0; transition:0.3s; border:1px solid rgba(255,215,0,0.1); }
+  .card:hover { transform:translateY(-5px); box-shadow:0 0 20px #FFD700; }
+  
+  /* Buttons */
+  button { background:#FFD700; border:none; padding:12px 24px; cursor:pointer; font-weight:bold; transition:0.3s; border-radius:8px; color:#000; }
+  button:hover { transform:scale(1.05); background:#fff; }
+  
+  /* Inputs */
+  input, select { width:100%; padding:12px; margin:10px 0; border-radius:8px; border:1px solid #FFD700; background:#111; color:#FFD700; }
+  input:focus { outline:none; box-shadow:0 0 10px #FFD700; }
+  
+  /* Tables */
+  table { width:100%; border-collapse:collapse; }
+  th, td { padding:12px; text-align:left; border-bottom:1px solid rgba(255,215,0,0.2); }
+  th { color:#FFD700; }
+  
+  /* Grid */
+  .grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+  
+  /* Responsive */
+  @media (max-width:768px) { nav { flex-direction:column; } nav div { display:flex; flex-wrap:wrap; justify-content:center; } .hero h1 { font-size:28px; } }
+</style>
+</head>
+<body>
 
-const app = express();
-app.use(express.json());
-app.use(cors());
-const PORT = process.env.PORT || 8080;
+<canvas class="particles"></canvas>
 
-// ==================== MONGODB ====================
-mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.error("❌ MongoDB Error:", err.message));
+<!-- NAVBAR -->
+<nav>
+  <h2><i class="fa-solid fa-robot"></i> Hakim AI</h2>
+  <div>
+    <a href="#home" onclick="showSection('home');return false;">Home</a>
+    <a href="#auth" onclick="showSection('auth');return false;">Register</a>
+    <a href="#login" onclick="showSection('login');return false;">Login</a>
+    <a href="#dashboard" onclick="showSection('dashboard');return false;">Dashboard</a>
+    <a href="#pricing" onclick="showSection('pricing');return false;">Pricing</a>
+    <a href="#referral" onclick="showSection('referral');return false;">Referral</a>
+    <a href="#leaderboard" onclick="showSection('leaderboard');return false;">Leaderboard</a>
+    <a href="#history" onclick="showSection('history');return false;">History</a>
+    <a href="#kyc" onclick="showSection('kyc');return false;">KYC</a>
+    <a href="#reset" onclick="showSection('reset');return false;">Reset</a>
+    <a href="#admin" onclick="showSection('admin');return false;">Admin</a>
+    <a href="#faq" onclick="showSection('faq');return false;">FAQ</a>
+    <a href="#terms" onclick="showSection('terms');return false;">Terms</a>
+  </div>
+</nav>
 
-// ==================== WEB3 SETUP ====================
-const bsc = new Web3("https://bsc-dataseed.binance.org/");
+<!-- HERO SECTION -->
+<section id="home" class="hero">
+  <h1>🚀 Hakim AI Arbitrage</h1>
+  <p>Trade smarter. Earn daily profits with AI-powered bots.</p>
+  <button onclick="showSection('dashboard')">Get Started</button>
+</section>
 
-// ==================== SIMPLE TRC20 FALLBACK (No TronWeb) ====================
-// TronWeb waa laga saaray si looga hortago qaladka
-// TRC20 addresses will use default address
-const DEFAULT_TRC20_ADDRESS = "TK6rVADXttcYhbzgyd1bRUmHCcwkrfm6m9";
+<div class="container">
+  <!-- REGISTER SECTION -->
+  <section id="auth" class="card">
+    <h2><i class="fa-solid fa-user-plus"></i> Register</h2>
+    <input id="regName" placeholder="Full Name">
+    <input id="regEmail" placeholder="Email">
+    <input id="regPass" type="password" placeholder="Password">
+    <button onclick="register()">Register</button>
+  </section>
 
-async function generateTRC20Wallet() {
-    // Return default address instead of generating new one
-    return { address: DEFAULT_TRC20_ADDRESS, privateKey: "dummy_private_key" };
-}
+  <!-- LOGIN SECTION -->
+  <section id="login" class="card">
+    <h2><i class="fa-solid fa-key"></i> Login</h2>
+    <input id="loginEmail" placeholder="Email">
+    <input id="loginPass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </section>
 
-// ==================== SCHEMAS ====================
-const userSchema = new mongoose.Schema({
-    name: String,
-    email: { type: String, unique: true },
-    password: String,
-    userId: String,
-    balance: { type: Number, default: 0 },
-    totalDeposit: { type: Number, default: 0 },
-    twoFactorSecret: String,
-    twoFactorEnabled: { type: Boolean, default: false },
-    referralCode: String,
-    referredBy: String,
-    referralEarnings: { type: Number, default: 0 },
-    referralCount: { type: Number, default: 0 },
-    rank: { type: String, default: "TRAINEE" },
-    botPlan: { type: String, default: "None" },
-    paymentPassword: String,
-    withdrawalCode: String,
-    withdrawalCodeExpiry: Date,
-    resetCode: String,
-    resetExpiry: Date,
-    bep20Address: String,
-    trc20Address: String,
-    transactions: [{
-        type: String,
-        amount: Number,
-        txid: String,
-        status: String,
-        createdAt: { type: Date, default: Date.now }
-    }],
-    createdAt: { type: Date, default: Date.now }
-});
-const User = mongoose.model("User", userSchema);
+  <!-- DASHBOARD SECTION -->
+  <section id="dashboard" class="card">
+    <h2><i class="fa-solid fa-chart-line"></i> Dashboard</h2>
+    <p>Balance: <strong id="balance">$0.00</strong></p>
+    <div class="grid-2">
+      <div><h3>Deposit</h3><input id="depAmount" placeholder="Amount (USDT)"><button onclick="deposit()">Deposit</button></div>
+      <div><h3>Withdraw</h3><input id="wdAmount" placeholder="Amount"><input id="wdAddress" placeholder="Wallet Address"><button onclick="withdraw()">Withdraw</button></div>
+    </div>
+  </section>
 
-const adminSchema = new mongoose.Schema({ email: String, password: String });
-const Admin = mongoose.model("Admin", adminSchema);
+  <!-- PRICING SECTION -->
+  <section id="pricing" class="card">
+    <h2><i class="fa-solid fa-tags"></i> Pricing Plans</h2>
+    <div class="grid-2">
+      <div class="card"><h3>Nano Bot</h3><p>$10/month – $1 daily profit</p><button>Select</button></div>
+      <div class="card"><h3>Alpha Bot</h3><p>$50/month – $3.5 daily profit</p><button>Select</button></div>
+      <div class="card"><h3>Legend Bot</h3><p>$300/month – $23 daily profit</p><button>Select</button></div>
+    </div>
+  </section>
 
-const announcementSchema = new mongoose.Schema({ title: String, message: String, createdAt: { type: Date, default: Date.now } });
-const Announcement = mongoose.model("Announcement", announcementSchema);
+  <!-- REFERRAL SECTION -->
+  <section id="referral" class="card">
+    <h2><i class="fa-solid fa-users"></i> Referral</h2>
+    <p>Referrals: <span id="refCount">0</span></p>
+    <p>Earnings: $<span id="refEarnings">0</span></p>
+    <p>Rank: <span id="userRank">TRAINEE</span></p>
+    <p>Your Referral Link: <strong id="refLink">Loading...</strong></p>
+    <button onclick="copyRefLink()">Copy Link</button>
+  </section>
 
-const complaintSchema = new mongoose.Schema({ user: String, message: String, createdAt: { type: Date, default: Date.now } });
-const Complaint = mongoose.model("Complaint", complaintSchema);
+  <!-- LEADERBOARD SECTION -->
+  <section id="leaderboard" class="card">
+    <h2><i class="fa-solid fa-trophy"></i> Leaderboard</h2>
+    <div class="grid-2">
+      <div><h3>TRAINEE</h3><p>$0/month</p><p>0 referrals</p></div>
+      <div><h3>BEGINNER</h3><p>$50/month</p><p>5 referrals</p></div>
+      <div><h3>SILVER</h3><p>$100/month</p><p>20 referrals</p></div>
+      <div><h3>GOLD</h3><p>$300/month</p><p>5 Silver leaders</p></div>
+      <div><h3>DIAMOND</h3><p>$1000/month</p><p>10 Gold leaders</p></div>
+      <div><h3>MANAGER</h3><p>$2000/month</p><p>5 Diamond leaders</p></div>
+    </div>
+  </section>
 
-const kycSchema = new mongoose.Schema({ userId: String, file: String, status: { type: String, default: "pending" }, createdAt: { type: Date, default: Date.now } });
-const KYC = mongoose.model("KYC", kycSchema);
+  <!-- HISTORY SECTION -->
+  <section id="history" class="card">
+    <h2><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</h2>
+    <table>
+      <thead><tr><th>Type</th><th>Amount</th><th>TXID</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody id="historyBody"><tr><td colspan="5">No transactions yet</td></tr></tbody>
+    </table>
+  </section>
 
-// ==================== EMAIL ====================
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-});
-async function sendEmail(to, subject, text) {
-    try {
-        await transporter.sendMail({ from: process.env.EMAIL_USER, to, subject, text });
-    } catch (err) { console.log("Email error:", err.message); }
-}
+  <!-- KYC SECTION -->
+  <section id="kyc" class="card">
+    <h2><i class="fa-solid fa-id-card"></i> KYC Verification</h2>
+    <input type="file" id="kycFile" accept="image/*">
+    <button onclick="uploadKYC()">Submit KYC</button>
+    <div id="kycList"></div>
+  </section>
 
-// ==================== TELEGRAM ====================
-async function sendTelegramAlert(text) {
-    try {
-        await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            chat_id: process.env.TELEGRAM_CHAT_ID,
-            text: text
-        });
-    } catch (err) { console.log("Telegram error:", err.message); }
-}
+  <!-- RESET PASSWORD SECTION -->
+  <section id="reset" class="card">
+    <h2><i class="fa-solid fa-lock"></i> Reset Password</h2>
+    <input id="resetEmail" placeholder="Email">
+    <button onclick="resetPasswordRequest()">Send Code</button>
+    <input id="resetCode" placeholder="Reset Code">
+    <input id="newPassword" type="password" placeholder="New Password">
+    <button onclick="resetPasswordConfirm()">Reset Password</button>
+  </section>
 
-// ==================== WALLET GENERATION ====================
-function generateBEP20Wallet() {
-    const wallet = bsc.eth.accounts.create();
-    return { address: wallet.address, privateKey: wallet.privateKey };
-}
+  <!-- ADMIN SECTION -->
+  <section id="admin" class="card">
+    <h2><i class="fa-solid fa-user-shield"></i> Admin Panel</h2>
+    <button onclick="loadKYC()">Load KYC Requests</button>
+    <div id="adminKycList"></div>
+  </section>
 
-// ==================== RANK UPDATE ====================
-async function updateUserRank(userId) {
-    const user = await User.findOne({ userId });
-    if (!user) return;
-    const totalReferrals = user.referralCount;
-    const totalDeposit = user.totalDeposit;
+  <!-- FAQ SECTION -->
+  <section id="faq" class="card">
+    <h2><i class="fa-solid fa-question-circle"></i> FAQ</h2>
+    <p><b>❓ How does Hakim AI Arbitrage work?</b><br>It automates trading bots to find price differences across exchanges and execute profitable trades 24/7.</p>
+    <p><b>❓ How do I withdraw?</b><br>Go to Dashboard → Withdraw form. Minimum withdrawal is $10 USDT.</p>
+    <p><b>❓ Is my money safe?</b><br>Yes, funds are stored in secured wallets with 2FA and admin approval for withdrawals.</p>
+  </section>
 
-    if (totalReferrals >= 20) user.rank = "SILVER";
-    else if (totalReferrals >= 5 || totalDeposit >= 100) user.rank = "BEGINNER";
-    else user.rank = "TRAINEE";
+  <!-- TERMS SECTION -->
+  <section id="terms" class="card">
+    <h2><i class="fa-solid fa-file-contract"></i> Terms & Conditions</h2>
+    <p>By using Hakim AI Arbitrage, you agree to our trading rules, risk disclaimers, and compliance with KYC/AML regulations. Trading involves risk. We do not guarantee profits.</p>
+  </section>
+</div>
 
-    if (user.rank === "SILVER") {
-        const silverCount = await User.countDocuments({ referredBy: user.userId, rank: "SILVER" });
-        if (silverCount >= 5) user.rank = "GOLD";
+<!-- LIVE CHAT BUTTON -->
+<button style="position:fixed;bottom:20px;right:20px;background:#FFD700;color:#000;border-radius:50%;width:55px;height:55px;font-size:24px;z-index:1000;" onclick="openChat()">💬</button>
+
+<script>
+  // ==================== PARTICLES ANIMATION ====================
+  const canvas = document.querySelector(".particles");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let particlesArray = [];
+  const colors = ["#FFD700","#ffffff","#ffcc00"];
+
+  class Particle {
+    constructor(x,y,size,color){
+      this.x=x; this.y=y; this.size=size; this.color=color;
+      this.speedX=Math.random()*1.5-0.75;
+      this.speedY=Math.random()*1.5-0.75;
     }
-    if (user.rank === "GOLD") {
-        const goldCount = await User.countDocuments({ referredBy: user.userId, rank: "GOLD" });
-        if (goldCount >= 10) user.rank = "DIAMOND";
+    update(){
+      this.x+=this.speedX; this.y+=this.speedY;
+      if(this.size>0.2) this.size-=0.008;
     }
-    if (user.rank === "DIAMOND") {
-        const diamondCount = await User.countDocuments({ referredBy: user.userId, rank: "DIAMOND" });
-        if (diamondCount >= 5) user.rank = "MANAGER";
+    draw(){ ctx.fillStyle=this.color; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); }
+  }
+
+  function initParticles(){
+    particlesArray=[];
+    for(let i=0;i<80;i++){
+      let size=Math.random()*4+1;
+      let x=Math.random()*canvas.width;
+      let y=Math.random()*canvas.height;
+      let color=colors[Math.floor(Math.random()*colors.length)];
+      particlesArray.push(new Particle(x,y,size,color));
     }
-    await user.save();
-}
+  }
 
-// ==================== AUTH ====================
-app.post("/api/auth/register", async (req, res) => {
-    try {
-        const { name, email, password, referralCode } = req.body;
-        const existing = await User.findOne({ email });
-        if (existing) return res.json({ success: false, message: "Email already exists" });
-        
-        const hashed = await bcrypt.hash(password, 10);
-        const userId = "HK" + Math.floor(1000 + Math.random() * 9000);
-        const userReferralCode = "REF" + userId;
-        const bep20Wallet = generateBEP20Wallet();
-        const trc20Wallet = await generateTRC20Wallet();
-
-        let referredByUser = null;
-        if (referralCode) {
-            referredByUser = await User.findOne({ referralCode });
-            if (referredByUser) {
-                referredByUser.referralCount += 1;
-                await referredByUser.save();
-            }
-        }
-
-        const user = new User({
-            name, email, password: hashed, userId, referralCode: userReferralCode,
-            bep20Address: bep20Wallet.address, trc20Address: trc20Wallet.address,
-            referredBy: referredByUser ? referredByUser.userId : null
-        });
-        await user.save();
-        
-        await sendEmail(email, "Welcome to Hakim AI!", `Welcome ${name}!\nYour BEP20: ${bep20Wallet.address}\nYour TRC20: ${trc20Wallet.address}`);
-        await sendTelegramAlert(`🆕 New user: ${name} (${email})`);
-        res.json({ success: true, user });
-    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
-});
-
-app.post("/api/auth/login", async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.json({ success: false, message: "User not found" });
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.json({ success: false, message: "Invalid password" });
-    res.json({ success: true, user });
-});
-
-// ==================== PASSWORD RESET ====================
-app.post("/api/auth/reset-password-request", async (req, res) => {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.json({ success: false, message: "User not found" });
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    user.resetCode = code;
-    user.resetExpiry = new Date(Date.now() + 10 * 60 * 1000);
-    await user.save();
-    await sendEmail(user.email, "Password Reset Code", `Your reset code: ${code}`);
-    res.json({ success: true, message: "Reset code sent" });
-});
-
-app.post("/api/auth/reset-password-confirm", async (req, res) => {
-    const { email, code, newPassword } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.json({ success: false, message: "User not found" });
-    if (user.resetCode !== code || user.resetExpiry < new Date())
-        return res.json({ success: false, message: "Invalid or expired code" });
-    user.password = await bcrypt.hash(newPassword, 10);
-    user.resetCode = null;
-    user.resetExpiry = null;
-    await user.save();
-    res.json({ success: true, message: "Password updated" });
-});
-
-// ==================== DEPOSIT ====================
-app.post("/api/deposit", async (req, res) => {
-    const { userId, amount, txid } = req.body;
-    const user = await User.findOne({ userId });
-    if (!user) return res.json({ success: false, message: "User not found" });
-    user.balance += amount;
-    user.totalDeposit += amount;
-    user.transactions.push({ type: "deposit", amount, txid, status: "completed" });
-    await user.save();
-    await updateUserRank(userId);
-    await sendTelegramAlert(`📥 Deposit: $${amount} by ${user.email} (TXID: ${txid})`);
-    res.json({ success: true, message: "Deposit recorded" });
-});
-
-// ==================== DEPOSIT MONITORING (BSCScan) ====================
-async function monitorBEP20Deposits() {
-    try {
-        const users = await User.find({});
-        for (const user of users) {
-            if (!user.bep20Address) continue;
-            const url = `https://api.bscscan.com/api?module=account&action=txlist&address=${user.bep20Address}&apikey=${process.env.BSCSCAN_API_KEY || ''}`;
-            const res = await axios.get(url);
-            const txs = res.data.result || [];
-            for (const tx of txs) {
-                const exists = user.transactions.find(t => t.txid === tx.hash);
-                if (tx.value > 0 && !exists) {
-                    const amount = Number(tx.value) / 1e18;
-                    if (amount > 0) {
-                        user.balance += amount;
-                        user.totalDeposit += amount;
-                        user.transactions.push({ type: "deposit", amount, txid: tx.hash, status: "completed" });
-                        await user.save();
-                        await sendEmail(user.email, "✅ Deposit Confirmed!", `Your deposit of $${amount} confirmed. TXID: ${tx.hash}`);
-                        await sendTelegramAlert(`💰 Deposit: $${amount} from ${user.email}\nTXID: ${tx.hash}`);
-                    }
-                }
-            }
-        }
-    } catch (err) { console.error("BEP20 monitor error:", err.message); }
-}
-setInterval(monitorBEP20Deposits, 60 * 1000);
-console.log("✅ Deposit monitoring started (every 1 minute)");
-
-// ==================== RENT BOT ====================
-const botPrices = { "Nano Bot": 29.99, "Alpha Bot": 99.99, "Legend Bot": 599.99 };
-app.post("/api/rent-bot", async (req, res) => {
-    const { userId, botName } = req.body;
-    const user = await User.findOne({ userId });
-    if (!user) return res.json({ success: false, message: "User not found" });
-    const botPrice = botPrices[botName];
-    if (user.balance < botPrice) return res.json({ success: false, message: "Insufficient balance" });
-    user.balance -= botPrice;
-    user.botPlan = botName;
-    user.transactions.push({ type: "rent", amount: botPrice, txid: botName, status: "completed" });
-    await user.save();
-    if (user.referredBy) {
-        const referrer = await User.findOne({ userId: user.referredBy });
-        if (referrer) {
-            const commission = botPrice * 0.10;
-            referrer.balance += commission;
-            referrer.referralEarnings += commission;
-            await referrer.save();
-            await sendTelegramAlert(`💰 Referral commission: $${commission} to ${referrer.email}`);
-        }
+  function animateParticles(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<particlesArray.length;i++){
+      particlesArray[i].update();
+      particlesArray[i].draw();
     }
-    res.json({ success: true, message: `Bot ${botName} rented`, newBalance: user.balance });
-});
+    requestAnimationFrame(animateParticles);
+  }
 
-// ==================== WITHDRAW ====================
-app.post("/api/withdraw/request", async (req, res) => {
-    const { userId } = req.body;
-    const user = await User.findOne({ userId });
-    if (!user) return res.json({ success: false, message: "User not found" });
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    user.withdrawalCode = code;
-    user.withdrawalCodeExpiry = new Date(Date.now() + 10 * 60 * 1000);
-    await user.save();
-    await sendEmail(user.email, "Withdrawal Code", `Your code: ${code}`);
-    res.json({ success: true, message: "Code sent" });
-});
+  initParticles();
+  animateParticles();
+  window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; initParticles(); });
 
-app.post("/api/withdraw/confirm", async (req, res) => {
-    const { userId, amount, address, emailCode, twoFACode, paymentPassword } = req.body;
-    const user = await User.findOne({ userId });
-    if (!user) return res.json({ success: false, message: "User not found" });
-    if (user.withdrawalCode !== emailCode) return res.json({ success: false, message: "Invalid email code" });
-    if (user.withdrawalCodeExpiry < new Date()) return res.json({ success: false, message: "Code expired" });
-    if (user.twoFactorEnabled) {
-        const valid2FA = speakeasy.totp.verify({ secret: user.twoFactorSecret, encoding: "base32", token: twoFACode });
-        if (!valid2FA) return res.json({ success: false, message: "Invalid 2FA" });
+  // ==================== API INTEGRATION ====================
+  const API_URL = "https://hakim-arbitrage-v8.up.railway.app";
+  let currentUser = null;
+
+  // Show/Hide Sections
+  function showSection(id){
+    document.querySelectorAll('.container section').forEach(s=>s.style.display='none');
+    document.getElementById(id).style.display='block';
+    document.getElementById('home').style.display='none';
+  }
+
+  // Register
+  async function register(){
+    const name=document.getElementById("regName").value;
+    const email=document.getElementById("regEmail").value;
+    const password=document.getElementById("regPass").value;
+    if(!name||!email||!password){ alert("Fill all fields"); return; }
+    const res=await fetch(API_URL+"/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,email,password})});
+    const data=await res.json();
+    if(data.success){ alert(`✅ Account created!\nYour BEP20: ${data.user.bep20Address}\nTRC20: ${data.user.trc20Address}`); showSection('login'); }
+    else alert("Registration failed: "+data.message);
+  }
+
+  // Login
+  async function login(){
+    const email=document.getElementById("loginEmail").value;
+    const password=document.getElementById("loginPass").value;
+    if(!email||!password){ alert("Enter email and password"); return; }
+    const res=await fetch(API_URL+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+    const data=await res.json();
+    if(data.success){
+      currentUser=data.user;
+      localStorage.setItem("user",JSON.stringify(currentUser));
+      updateDashboard();
+      showSection('dashboard');
+      alert(`✅ Welcome ${currentUser.name}!`);
+    } else alert("Login failed: "+data.message);
+  }
+
+  // Update Dashboard
+  function updateDashboard(){
+    if(!currentUser) return;
+    document.getElementById("balance").innerText=`$${currentUser.balance.toFixed(2)}`;
+    document.getElementById("refCount").innerText=currentUser.referralCount||0;
+    document.getElementById("refEarnings").innerText=currentUser.referralEarnings||0;
+    document.getElementById("userRank").innerText=currentUser.rank||"TRAINEE";
+    document.getElementById("refLink").innerText=`${window.location.origin}?ref=${currentUser.referralCode}`;
+    loadTransactionHistory();
+  }
+
+  // Deposit
+  async function deposit(){
+    if(!currentUser){ alert("Please login first"); return; }
+    const amount=parseFloat(document.getElementById("depAmount").value);
+    if(!amount||amount<30){ alert("Minimum deposit $30"); return; }
+    const res=await fetch(API_URL+"/api/deposit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:currentUser.userId,amount,txid:"demoTX"+Date.now()})});
+    const data=await res.json();
+    alert(data.message);
+    if(data.success){ currentUser.balance+=amount; updateDashboard(); }
+  }
+
+  // Withdraw
+  async function withdraw(){
+    if(!currentUser){ alert("Please login first"); return; }
+    const amount=parseFloat(document.getElementById("wdAmount").value);
+    const address=document.getElementById("wdAddress").value;
+    if(!amount||amount<10){ alert("Minimum withdrawal $10"); return; }
+    if(!address){ alert("Enter wallet address"); return; }
+    const res=await fetch(API_URL+"/api/withdraw/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:currentUser.userId,amount,address,emailCode:"123456",twoFACode:"000000",paymentPassword:"demo123"})});
+    const data=await res.json();
+    alert(data.message);
+    if(data.success){ currentUser.balance-=amount; updateDashboard(); }
+  }
+
+  // Transaction History
+  async function loadTransactionHistory(){
+    if(!currentUser) return;
+    const res=await fetch(API_URL+"/api/history/"+currentUser.userId);
+    const data=await res.json();
+    if(data.success){
+      const tbody=document.getElementById("historyBody");
+      if(data.transactions.length===0) tbody.innerHTML='<tr><td colspan="5">No transactions yet</td></tr>';
+      else tbody.innerHTML=data.transactions.map(t=>`<tr><td>${t.type}</td><td>$${t.amount}</td><td>${t.txid}</td><td>${t.status}</td><td>${new Date(t.createdAt).toLocaleDateString()}</td></tr>`).join('');
     }
-    const validPass = await bcrypt.compare(paymentPassword, user.paymentPassword);
-    if (!validPass) return res.json({ success: false, message: "Invalid payment password" });
-    if (user.balance < amount) return res.json({ success: false, message: "Insufficient balance" });
-    user.balance -= amount;
-    user.transactions.push({ type: "withdraw", amount, txid: address, status: "pending" });
-    await user.save();
-    await sendTelegramAlert(`📤 Withdrawal Request: $${amount} from ${user.email} pending admin approval`);
-    res.json({ success: true, message: "Withdrawal pending admin approval" });
-});
+  }
 
-// ==================== REFERRAL ====================
-app.get("/api/referral/:userId", async (req, res) => {
-    const user = await User.findOne({ userId: req.params.userId });
-    if (!user) return res.json({ success: false, message: "User not found" });
-    const referrals = await User.find({ referredBy: user.userId });
-    res.json({ success: true, referrals: referrals.length, earnings: user.referralEarnings, rank: user.rank });
-});
+  // Reset Password
+  async function resetPasswordRequest(){
+    const email=document.getElementById("resetEmail").value;
+    if(!email){ alert("Enter email"); return; }
+    const res=await fetch(API_URL+"/api/auth/reset-password-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
+    const data=await res.json();
+    alert(data.message);
+  }
 
-// ==================== HISTORY ====================
-app.get("/api/history/:userId", async (req, res) => {
-    const user = await User.findOne({ userId: req.params.userId });
-    if (!user) return res.json({ success: false, message: "User not found" });
-    res.json({ success: true, transactions: user.transactions });
-});
+  async function resetPasswordConfirm(){
+    const email=document.getElementById("resetEmail").value;
+    const code=document.getElementById("resetCode").value;
+    const newPassword=document.getElementById("newPassword").value;
+    if(!email||!code||!newPassword){ alert("Fill all fields"); return; }
+    const res=await fetch(API_URL+"/api/auth/reset-password-confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code,newPassword})});
+    const data=await res.json();
+    alert(data.message);
+  }
 
-// ==================== ANNOUNCEMENTS ====================
-app.get("/api/announcements", async (req, res) => {
-    const anns = await Announcement.find({}).sort({ createdAt: -1 });
-    res.json({ success: true, announcements: anns });
-});
+  // KYC
+  async function uploadKYC(){
+    if(!currentUser){ alert("Please login first"); return; }
+    const fileInput=document.getElementById("kycFile");
+    if(!fileInput.files[0]){ alert("Select a file"); return; }
+    const formData=new FormData();
+    formData.append("userId",currentUser.userId);
+    formData.append("file",fileInput.files[0]);
+    const res=await fetch(API_URL+"/api/kyc/upload",{method:"POST",body:formData});
+    const data=await res.json();
+    alert(data.message);
+  }
 
-app.post("/api/admin/announcement", async (req, res) => {
-    const { title, message } = req.body;
-    const ann = new Announcement({ title, message });
-    await ann.save();
-    await sendTelegramAlert(`📢 New Announcement: ${title}\n${message}`);
-    res.json({ success: true, announcement: ann });
-});
+  // Admin KYC
+  async function loadKYC(){
+    const res=await fetch(API_URL+"/api/admin/kyc");
+    const data=await res.json();
+    const div=document.getElementById("adminKycList");
+    div.innerHTML="";
+    if(data.kycs) data.kycs.forEach(k=>{ div.innerHTML+=`<div class="card"><p>User: ${k.userId}</p><p>Status: ${k.status}</p><button onclick="approveKYC('${k._id}')">Approve</button></div>`; });
+    else div.innerHTML="<p>No KYC requests</p>";
+  }
 
-// ==================== COMPLAINTS ====================
-app.post("/api/complaint", async (req, res) => {
-    const { user, message } = req.body;
-    const c = new Complaint({ user, message });
-    await c.save();
-    await sendTelegramAlert(`⚠️ Complaint from ${user}: ${message}`);
-    res.json({ success: true, complaint: c });
-});
+  async function approveKYC(id){
+    const res=await fetch(API_URL+"/api/admin/kyc/approve",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kycId:id})});
+    const data=await res.json();
+    alert(data.message);
+    loadKYC();
+  }
 
-// ==================== KYC ====================
-app.post("/api/kyc/upload", async (req, res) => {
-    const { userId, file } = req.body;
-    const kyc = new KYC({ userId, file });
-    await kyc.save();
-    await sendTelegramAlert(`🪪 KYC submitted by ${userId}`);
-    res.json({ success: true, message: "KYC submitted" });
-});
+  // Copy Link
+  function copyRefLink(){ navigator.clipboard.writeText(document.getElementById("refLink").innerText); alert("Link copied!"); }
 
-// ==================== ADMIN ====================
-app.get("/api/admin/users", async (req, res) => {
-    const users = await User.find({});
-    res.json({ success: true, users });
-});
+  // Live Chat
+  function openChat(){ alert("💬 Live Chat: Contact support at Telegram @hakim_support"); }
 
-app.post("/api/admin/withdraw/approve", async (req, res) => {
-    const { userId, txid } = req.body;
-    const user = await User.findOne({ userId });
-    if (!user) return res.json({ success: false, message: "User not found" });
-    const tx = user.transactions.find(t => t.txid === txid && t.status === "pending");
-    if (!tx) return res.json({ success: false, message: "Transaction not found" });
-    tx.status = "completed";
-    await user.save();
-    await sendEmail(user.email, "Withdrawal Approved", `Your withdrawal of $${tx.amount} approved`);
-    res.json({ success: true, message: "Withdrawal approved" });
-});
+  // Check if user is already logged in
+  const savedUser = localStorage.getItem("user");
+  if(savedUser){ currentUser=JSON.parse(savedUser); updateDashboard(); }
 
-app.get("/api/admin/kyc", async (req, res) => {
-    const kycs = await KYC.find({});
-    res.json({ success: true, kycs });
-});
-
-app.post("/api/admin/kyc/approve", async (req, res) => {
-    const { kycId } = req.body;
-    const kyc = await KYC.findById(kycId);
-    if (!kyc) return res.json({ success: false, message: "KYC not found" });
-    kyc.status = "approved";
-    await kyc.save();
-    res.json({ success: true, message: "KYC approved" });
-});
-
-app.get("/api/admin/complaints", async (req, res) => {
-    const complaints = await Complaint.find({});
-    res.json({ success: true, complaints });
-});
-
-// ==================== HEALTH CHECK ====================
-app.get("/api/health", (req, res) => {
-    res.json({ status: "OK", timestamp: new Date().toISOString() });
-});
-
-app.get("/", (req, res) => {
-    res.json({ status: "OK", message: "Hakim Arbitrage API is running" });
-});
-
-// ==================== SERVER RUN ====================
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`✅ MongoDB: ${mongoose.connection.readyState === 1 ? "Connected" : "Disconnected"}`);
-});
+  // Hide all sections initially, show home
+  document.querySelectorAll('.container section').forEach(s=>s.style.display='none');
+  document.getElementById('home').style.display='flex';
+</script>
+</body>
+</html>
