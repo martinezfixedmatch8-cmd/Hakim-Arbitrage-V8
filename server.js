@@ -1,237 +1,322 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const speakeasy = require("speakeasy");
+const QRCode = require("qrcode");
+const axios = require("axios");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const cors = require("cors");
 
-const API = "https://hakim-arbitrage-v8.up.railway.app";
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
-  const [view, setView] = useState("home");
-  const [users, setUsers] = useState([]);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [referrals, setReferrals] = useState([]);
-  const [otpSent, setOtpSent] = useState(false);
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.error("❌ DB Error:", err));
 
-  useEffect(() => {
-    if (token) loadUser();
-    loadLeaderboard();
-  }, [token]);
+// ==================== EMAIL SETUP ====================
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+});
 
-  async function loadUser() {
-    const res = await axios.get(API + "/user", { headers: { Authorization: `Bearer ${token}` } });
-    setUser(res.data);
-    loadReferrals(res.data._id);
-  }
-
-  async function loadLeaderboard() {
-    const res = await axios.get(API + "/leaderboard");
-    setLeaderboard(res.data);
-  }
-
-  async function loadReferrals(userId) {
-    const res = await axios.get(API + `/referral/${userId}`);
-    setReferrals(res.data.referrals || []);
-  }
-
-  async function handleRegister(e) {
-    e.preventDefault();
-    const form = new FormData(e.target);
-    const res = await axios.post(API + "/register", {
-      name: form.get("name"),
-      email: form.get("email"),
-      password: form.get("password"),
-      ref: form.get("ref")
-    });
-    if (res.data.success) alert("Registered! Please login.");
-  }
-
-  async function handleLogin(e) {
-    e.preventDefault();
-    const res = await axios.post(API + "/login", {
-      email: e.target.email.value,
-      password: e.target.password.value
-    });
-    if (res.data.token) {
-      localStorage.setItem("token", res.data.token);
-      setToken(res.data.token);
-      setUser(res.data.user);
-    } else alert("Login failed");
-  }
-
-  async function rentBot(botName, botPrice) {
-    const res = await axios.post(API + "/rent-bot", { botName, botPrice }, { headers: { Authorization: `Bearer ${token}` } });
-    alert(res.data.success ? "Bot activated!" : res.data.error);
-    loadUser();
-  }
-
-  async function requestWithdrawOTP() {
-    await axios.post(API + "/withdraw/otp", {}, { headers: { Authorization: `Bearer ${token}` } });
-    setOtpSent(true);
-    alert("OTP sent to your email!");
-  }
-
-  async function confirmWithdraw(e) {
-    e.preventDefault();
-    const res = await axios.post(API + "/withdraw/confirm", {
-      amount: parseFloat(e.target.amount.value),
-      address: e.target.address.value,
-      otp: e.target.otp.value,
-      twoFACode: e.target.twoFACode.value
-    }, { headers: { Authorization: `Bearer ${token}` } });
-    alert(res.data.message || res.data.error);
-    if (res.data.success) loadUser();
-  }
-
-  async function setup2FA() {
-    const res = await axios.get(API + "/2fa/setup", { headers: { Authorization: `Bearer ${token}` } });
-    const qrWindow = window.open();
-    qrWindow.document.write(`<img src="${res.data.qr}" /><p>Secret: ${res.data.secret}</p><p>Enter code in Google Authenticator</p>`);
-  }
-
-  async function verify2FA(code) {
-    const res = await axios.post(API + "/2fa/verify", { code }, { headers: { Authorization: `Bearer ${token}` } });
-    alert(res.data.success ? "2FA Enabled!" : "Invalid code");
-    loadUser();
-  }
-
-  if (!token) {
-    return (
-      <div style={{ background: "#05070a", color: "#f3ba2f", minHeight: "100vh", fontFamily: "Poppins" }}>
-        <div style={{ maxWidth: 500, margin: "auto", padding: 40 }}>
-          <h1 style={{ color: "#f3ba2f", textAlign: "center" }}>🚀 Hakim AI</h1>
-          <form onSubmit={handleRegister} style={{ background: "#1a1f2c", padding: 25, borderRadius: 20, marginBottom: 20 }}>
-            <h2>Register</h2>
-            <input name="name" placeholder="Name" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
-            <input name="email" type="email" placeholder="Email" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
-            <input name="password" type="password" placeholder="Password" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
-            <input name="ref" placeholder="Referral Code (optional)" style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
-            <button type="submit" style={{ background: "#f3ba2f", color: "black", padding: 12, borderRadius: 8, width: "100%", fontWeight: "bold" }}>Register</button>
-          </form>
-
-          <form onSubmit={handleLogin} style={{ background: "#1a1f2c", padding: 25, borderRadius: 20 }}>
-            <h2>Login</h2>
-            <input name="email" type="email" placeholder="Email" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
-            <input name="password" type="password" placeholder="Password" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
-            <button type="submit" style={{ background: "#f3ba2f", color: "black", padding: 12, borderRadius: 8, width: "100%", fontWeight: "bold" }}>Login</button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ background: "#05070a", color: "white", fontFamily: "Poppins", minHeight: "100vh" }}>
-      <nav style={{ background: "#111", padding: "15px 20px", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-        <h2 style={{ color: "#f3ba2f" }}>Hakim AI</h2>
-        <div style={{ display: "flex", gap: 15 }}>
-          <button onClick={() => setView("home")} style={{ background: "none", color: "#f3ba2f" }}>Home</button>
-          <button onClick={() => setView("dashboard")} style={{ background: "none", color: "#f3ba2f" }}>Dashboard</button>
-          <button onClick={() => setView("bots")} style={{ background: "none", color: "#f3ba2f" }}>Bots</button>
-          <button onClick={() => setView("leaderboard")} style={{ background: "none", color: "#f3ba2f" }}>Leaderboard</button>
-          <button onClick={() => setView("referral")} style={{ background: "none", color: "#f3ba2f" }}>Referral</button>
-          <button onClick={() => { localStorage.clear(); setToken(null); setUser(null); }} style={{ background: "none", color: "red" }}>Logout</button>
-        </div>
-      </nav>
-
-      <div style={{ maxWidth: 1200, margin: "auto", padding: 30 }}>
-        {view === "home" && (
-          <div style={{ textAlign: "center", padding: 40 }}>
-            <h1 style={{ fontSize: 48, color: "#f3ba2f" }}>🤖 AI Arbitrage Trading</h1>
-            <p style={{ color: "#8a92a3" }}>Automated trading bot • 0.5-3% daily profit • 24/7</p>
-            <button onClick={() => setView("dashboard")} style={{ background: "#f3ba2f", color: "black", padding: "12px 30px", borderRadius: 30, fontSize: 18, marginTop: 20 }}>Get Started</button>
-            <div style={{ marginTop: 40, background: "#1a1f2c", padding: 20, borderRadius: 20 }}>
-              <h3>📈 Live BTC Price</h3>
-              <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=1" width="100%" height="300" style={{ border: "none", borderRadius: 12 }}></iframe>
-            </div>
-          </div>
-        )}
-
-        {view === "dashboard" && user && (
-          <div>
-            <div style={{ background: "linear-gradient(135deg,#1a1f2c,#0f121a)", borderRadius: 28, padding: 30, textAlign: "center", marginBottom: 30 }}>
-              <h2>Welcome, {user.name}</h2>
-              <div style={{ fontSize: 48, fontWeight: "bold", color: "#f3ba2f" }}>${user.balance?.toFixed(2)}</div>
-              <p>Rank: <strong>{user.rank}</strong> | Bot: {user.botPlan}</p>
-            </div>
-
-            <div style={{ background: "#1a1f2c", borderRadius: 20, padding: 25, marginBottom: 20 }}>
-              <h3>📥 Your Deposit Addresses</h3>
-              <p><strong>BEP20:</strong> {user.walletBEP20}</p>
-              <p><strong>TRC20:</strong> {user.walletTRC20}</p>
-              <p style={{ color: "#f6465d", fontSize: 12 }}>⚠️ Send only USDT to these addresses</p>
-            </div>
-
-            <div style={{ background: "#1a1f2c", borderRadius: 20, padding: 25, marginBottom: 20 }}>
-              <h3>📤 Withdraw Funds</h3>
-              {!otpSent && <button onClick={requestWithdrawOTP} style={{ background: "#f3ba2f", color: "black", padding: 12, borderRadius: 10, width: "100%" }}>Send OTP to Email</button>}
-              {otpSent && (
-                <form onSubmit={confirmWithdraw}>
-                  <input name="amount" type="number" placeholder="Amount (USDT)" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
-                  <input name="address" placeholder="BEP20/TRC20 Address" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
-                  <input name="otp" placeholder="OTP Code" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
-                  <input name="twoFACode" placeholder="2FA Code (if enabled)" style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
-                  <button type="submit" style={{ background: "#f3ba2f", color: "black", padding: 12, borderRadius: 8, width: "100%", fontWeight: "bold" }}>Confirm Withdrawal</button>
-                </form>
-              )}
-            </div>
-
-            <div style={{ background: "#1a1f2c", borderRadius: 20, padding: 25 }}>
-              <h3>🔐 Security</h3>
-              {!user.twoFAEnabled ? (
-                <>
-                  <button onClick={setup2FA} style={{ background: "#f3ba2f", color: "black", padding: 10, borderRadius: 8, marginRight: 10 }}>Setup 2FA</button>
-                  <input id="2faCode" placeholder="Enter 2FA code" style={{ padding: 10, background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
-                  <button onClick={() => verify2FA(document.getElementById("2faCode").value)} style={{ background: "#f3ba2f", color: "black", padding: 10, borderRadius: 8 }}>Verify 2FA</button>
-                </>
-              ) : <p style={{ color: "#0ecb81" }}>✅ 2FA Enabled</p>}
-            </div>
-          </div>
-        )}
-
-        {view === "bots" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 20 }}>
-            {[{ name: "Nano Bot", price: 49.99 }, { name: "Alpha Bot", price: 99.99 }, { name: "Pro Bot", price: 199.99 }, { name: "Elite Bot", price: 399.99 }, { name: "Legend Bot", price: 599.99 }].map(bot => (
-              <div key={bot.name} style={{ background: "#1a1f2c", borderRadius: 20, padding: 25, textAlign: "center" }}>
-                <h3>{bot.name}</h3>
-                <p style={{ fontSize: 28, fontWeight: "bold", color: "#f3ba2f" }}>${bot.price}</p>
-                <button onClick={() => rentBot(bot.name, bot.price)} style={{ background: "#f3ba2f", color: "black", padding: 10, borderRadius: 8, width: "100%" }}>Rent Bot</button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {view === "leaderboard" && (
-          <div>
-            <h2 style={{ color: "#f3ba2f" }}>🏆 Leaderboard</h2>
-            {leaderboard.map((u, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", background: "#1a1f2c", padding: 15, borderRadius: 12, marginBottom: 10 }}>
-                <span>#{i + 1} {u.name}</span>
-                <span>💰 ${u.balance?.toFixed(2)}</span>
-                <span>👥 {u.referrals} refs</span>
-                <span>🏅 {u.rank}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {view === "referral" && (
-          <div>
-            <div style={{ background: "#1a1f2c", borderRadius: 20, padding: 25, textAlign: "center", marginBottom: 20 }}>
-              <h3>Your Referral Code</h3>
-              <p style={{ fontSize: 24, color: "#f3ba2f" }}>{user.referralCode}</p>
-              <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}?ref=${user.referralCode}`)} style={{ background: "#f3ba2f", color: "black", padding: 10, borderRadius: 8 }}>Copy Link</button>
-              <p>Total Referrals: {referrals.length}</p>
-              <p>Earnings: ${user.referralEarnings?.toFixed(2)}</p>
-            </div>
-            {referrals.length > 0 && (
-              <div style={{ background: "#1a1f2c", borderRadius: 20, padding: 25 }}>
-                <h3>Your Referrals</h3>
-                {referrals.map((r, i) => <p key={i}>{r.name} - {r.email}</p>)}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+async function sendEmail(to, subject, text) {
+  await transporter.sendMail({ from: process.env.EMAIL_USER, to, subject, html: text });
 }
+
+// ==================== TELEGRAM ====================
+async function sendTelegram(text) {
+  await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    chat_id: process.env.TELEGRAM_CHAT_ID,
+    text: text
+  });
+}
+
+// ==================== USER MODEL ====================
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true },
+  password: String,
+  balance: { type: Number, default: 0 },
+  totalDeposit: { type: Number, default: 0 },
+  walletBEP20: String,
+  walletTRC20: String,
+  referralCode: String,
+  referredBy: String,
+  referrals: [{ type: String }],
+  referralEarnings: { type: Number, default: 0 },
+  kycVerified: { type: Boolean, default: false },
+  paymentPassword: String,
+  twoFASecret: String,
+  twoFAEnabled: { type: Boolean, default: false },
+  withdrawOTP: String,
+  withdrawOTPExpiry: Date,
+  botActive: { type: Boolean, default: false },
+  botPlan: { type: String, default: "None" },
+  rank: { type: String, default: "TRAINEE" },
+  transactions: [{
+    type: String,
+    amount: Number,
+    status: String,
+    txid: String,
+    createdAt: { type: Date, default: Date.now }
+  }],
+  createdAt: { type: Date, default: Date.now }
+});
+
+const User = mongoose.model("User", userSchema);
+
+// ==================== AUTH MIDDLEWARE ====================
+function auth(req, res, next) {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "No token" });
+  try {
+    req.user = jwt.verify(token, "SECRET_KEY");
+    next();
+  } catch {
+    res.status(403).json({ error: "Invalid token" });
+  }
+}
+
+// ==================== REGISTER ====================
+app.post("/api/register", async (req, res) => {
+  const { name, email, password, ref } = req.body;
+  const hashed = await bcrypt.hash(password, 10);
+  const referralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+  const walletBEP20 = "0x" + crypto.randomBytes(20).toString("hex");
+  const walletTRC20 = "T" + crypto.randomBytes(20).toString("hex").substring(0, 33);
+
+  let referredBy = null;
+  if (ref) {
+    const referrer = await User.findOne({ referralCode: ref });
+    if (referrer) {
+      referredBy = referrer.referralCode;
+      referrer.referrals.push(email);
+      await referrer.save();
+    }
+  }
+
+  const user = new User({ name, email, password: hashed, referralCode, walletBEP20, walletTRC20, referredBy });
+  await user.save();
+
+  await sendTelegram(`🆕 New user: ${name} (${email})`);
+  res.json({ success: true, user });
+});
+
+// ==================== LOGIN ====================
+app.post("/api/login", async (req, res) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) return res.status(400).json({ error: "User not found" });
+  const valid = await bcrypt.compare(req.body.password, user.password);
+  if (!valid) return res.status(400).json({ error: "Wrong password" });
+  const token = jwt.sign({ id: user._id }, "SECRET_KEY");
+  res.json({ token, user: { id: user._id, name: user.name, email: user.email, balance: user.balance, rank: user.rank, referralCode: user.referralCode } });
+});
+
+// ==================== GET USER ====================
+app.get("/api/user", auth, async (req, res) => {
+  const user = await User.findById(req.user.id);
+  res.json(user);
+});
+
+// ==================== GET USER BY ID ====================
+app.get("/api/user/:id", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ error: "User not found" });
+  res.json({ name: user.name, balance: user.balance, rank: user.rank, referralCode: user.referralCode });
+});
+
+// ==================== 2FA SETUP ====================
+app.get("/api/2fa/setup", auth, async (req, res) => {
+  const secret = speakeasy.generateSecret({ length: 20 });
+  await User.findByIdAndUpdate(req.user.id, { twoFASecret: secret.base32 });
+  const qr = await QRCode.toDataURL(secret.otpauth_url);
+  res.json({ qr, secret: secret.base32 });
+});
+
+app.post("/api/2fa/verify", auth, async (req, res) => {
+  const user = await User.findById(req.user.id);
+  const verified = speakeasy.totp.verify({ secret: user.twoFASecret, encoding: "base32", token: req.body.code });
+  if (!verified) return res.status(400).json({ error: "Invalid code" });
+  user.twoFAEnabled = true;
+  await user.save();
+  res.json({ success: true });
+});
+
+// ==================== WITHDRAW OTP ====================
+app.post("/api/withdraw/otp", auth, async (req, res) => {
+  const user = await User.findById(req.user.id);
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  user.withdrawOTP = otp;
+  user.withdrawOTPExpiry = new Date(Date.now() + 10 * 60 * 1000);
+  await user.save();
+  await sendEmail(user.email, "Withdrawal OTP Code", `<h2>Your OTP: ${otp}</h2><p>Valid for 10 minutes.</p>`);
+  res.json({ success: true });
+});
+
+// ==================== CONFIRM WITHDRAW ====================
+app.post("/api/withdraw/confirm", auth, async (req, res) => {
+  const user = await User.findById(req.user.id);
+  const { amount, address, otp, twoFACode } = req.body;
+
+  if (amount < 10) return res.status(400).json({ error: "Minimum $10" });
+  if (user.balance < amount) return res.status(400).json({ error: "Insufficient balance" });
+  if (user.withdrawOTP !== otp || user.withdrawOTPExpiry < new Date()) return res.status(400).json({ error: "Invalid OTP" });
+
+  if (user.twoFAEnabled) {
+    const valid2FA = speakeasy.totp.verify({ secret: user.twoFASecret, encoding: "base32", token: twoFACode });
+    if (!valid2FA) return res.status(400).json({ error: "Invalid 2FA" });
+  }
+
+  user.balance -= amount;
+  user.transactions.push({ type: "withdraw", amount, status: "pending", txid: address });
+  await user.save();
+
+  await sendTelegram(`📤 Withdrawal request: $${amount} from ${user.email} to ${address}`);
+  res.json({ success: true, message: "Withdrawal pending admin approval" });
+});
+
+// ==================== DEPOSIT SCAN (BSCScan) ====================
+async function scanDeposits() {
+  const users = await User.find();
+  for (const user of users) {
+    const url = `https://api.bscscan.com/api?module=account&action=txlist&address=${user.walletBEP20}&apikey=${process.env.BSCSCAN_API_KEY}`;
+    try {
+      const res = await axios.get(url);
+      const txs = res.data.result || [];
+      for (const tx of txs) {
+        const exists = user.transactions.find(t => t.txid === tx.hash);
+        if (tx.to.toLowerCase() === user.walletBEP20.toLowerCase() && !exists) {
+          const amount = parseFloat(tx.value) / 1e18;
+          if (amount > 0) {
+            user.balance += amount;
+            user.totalDeposit += amount;
+            user.transactions.push({ type: "deposit", amount, status: "completed", txid: tx.hash });
+            await user.save();
+            await sendTelegram(`💰 Deposit: $${amount} from ${user.email}`);
+            await updateUserRank(user._id);
+          }
+        }
+      }
+    } catch (err) { console.error("Scan error:", err.message); }
+  }
+}
+setInterval(scanDeposits, 60000);
+
+// ==================== RANK UPDATE ====================
+async function updateUserRank(userId) {
+  const user = await User.findById(userId);
+  if (!user) return;
+  const refCount = user.referrals.length;
+  const deposit = user.totalDeposit;
+
+  if (deposit >= 50000) user.rank = "MANAGER";
+  else if (deposit >= 20000) user.rank = "DIAMOND";
+  else if (deposit >= 10000) user.rank = "GOLD";
+  else if (deposit >= 2000) user.rank = "SILVER";
+  else if (refCount >= 5 || deposit >= 100) user.rank = "BEGINNER";
+  else user.rank = "TRAINEE";
+  await user.save();
+}
+
+// ==================== RENT BOT ====================
+app.post("/api/rent-bot", auth, async (req, res) => {
+  const user = await User.findById(req.user.id);
+  const { botName, botPrice } = req.body;
+  if (user.balance < botPrice) return res.status(400).json({ error: "Insufficient balance" });
+
+  user.balance -= botPrice;
+  user.botPlan = botName;
+  user.botActive = true;
+  await user.save();
+
+  // Referral commission (10%)
+  if (user.referredBy) {
+    const referrer = await User.findOne({ referralCode: user.referredBy });
+    if (referrer) {
+      const commission = botPrice * 0.10;
+      referrer.balance += commission;
+      referrer.referralEarnings += commission;
+      await referrer.save();
+      await sendTelegram(`💰 Referral commission: $${commission} to ${referrer.email}`);
+    }
+  }
+
+  res.json({ success: true, newBalance: user.balance });
+});
+
+// ==================== TRADING ENGINE (Binance API) ====================
+async function getPrice(symbol) {
+  try {
+    const res = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+    return parseFloat(res.data.price);
+  } catch { return null; }
+}
+
+async function tradingEngine() {
+  const users = await User.find({ botActive: true });
+  const btcPrice = await getPrice("BTCUSDT");
+  if (!btcPrice) return;
+
+  for (const user of users) {
+    let profitPercent = 0.005 + Math.random() * 0.025; // 0.5% - 3%
+    let profit = user.totalDeposit * profitPercent;
+    if (profit < 0.5) profit = 0.5;
+
+    user.balance += profit;
+    user.transactions.push({ type: "profit", amount: profit, status: "completed" });
+    await user.save();
+  }
+  console.log("✅ Trading engine executed", new Date().toISOString());
+}
+setInterval(tradingEngine, 300000); // every 5 minutes
+
+// ==================== ADMIN - GET ALL USERS ====================
+app.get("/api/admin/users", async (req, res) => {
+  const users = await User.find({}).sort({ createdAt: -1 });
+  res.json(users);
+});
+
+// ==================== ADMIN - APPROVE WITHDRAW ====================
+app.post("/api/admin/withdraw/approve", async (req, res) => {
+  const { userId, txid } = req.body;
+  const user = await User.findOne({ _id: userId });
+  const tx = user.transactions.find(t => t.txid === txid && t.status === "pending");
+  if (tx) {
+    tx.status = "completed";
+    await user.save();
+    await sendEmail(user.email, "Withdrawal Approved", `Your withdrawal of $${tx.amount} has been approved.`);
+    await sendTelegram(`✅ Withdrawal approved: $${tx.amount} for ${user.email}`);
+  }
+  res.json({ success: true });
+});
+
+// ==================== ADMIN - APPROVE KYC ====================
+app.post("/api/admin/kyc/approve", async (req, res) => {
+  const { userId } = req.body;
+  await User.findByIdAndUpdate(userId, { kycVerified: true });
+  res.json({ success: true });
+});
+
+// ==================== LEADERBOARD ====================
+app.get("/api/leaderboard", async (req, res) => {
+  const users = await User.find({}).sort({ totalDeposit: -1 }).limit(20);
+  res.json(users.map(u => ({ name: u.name, balance: u.balance, rank: u.rank, referrals: u.referrals.length })));
+});
+
+// ==================== REFERRAL INFO ====================
+app.get("/api/referral/:userId", async (req, res) => {
+  const user = await User.findById(req.params.userId);
+  if (!user) return res.status(404).json({ error: "User not found" });
+  const referrals = await User.find({ referredBy: user.referralCode });
+  res.json({ code: user.referralCode, count: referrals.length, earnings: user.referralEarnings, referrals: referrals.map(r => ({ name: r.name, email: r.email })) });
+});
+
+// ==================== HEALTH CHECK ====================
+app.get("/api/health", (req, res) => res.json({ status: "OK" }));
+
+app.listen(process.env.PORT || 8080, () => console.log("🚀 Server running"));
