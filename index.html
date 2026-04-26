@@ -3,208 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HAKIM AI | Quantum Arbitrage Global</title>
+    <title>HAKIM AI | Full Quantum Arbitrage</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
-            --gold: #f3ba2f;
-            --dark-bg: #0b0e11;
-            --card-bg: #1e2329;
-            --text-gray: #848e9c;
-            --success: #0ecb81;
-            --danger: #f6465d;
+            --gold: #f3ba2f; --dark-bg: #0b0e11; --card-bg: #1e2329;
+            --text-gray: #848e9c; --success: #0ecb81; --danger: #f6465d;
         }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--dark-bg); color: white; overflow-x: hidden; padding-bottom: 80px; }
 
-        * { margin: 0; padding: 0; box-box: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--dark-bg); color: white; overflow-x: hidden; }
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
 
-        /* Navigation */
-        .navbar { background: var(--card-bg); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 90%; z-index: 1000; border-bottom: 1px solid #333; }
-        .logo { font-size: 24px; font-weight: bold; color: white; letter-spacing: 2px; }
-        .logo span { color: var(--gold); }
-        .nav-links { display: flex; list-style: none; gap: 20px; }
-        .nav-links li { cursor: pointer; color: var(--text-gray); transition: 0.3s; font-size: 14px; }
-        .nav-links li:hover, .nav-links li.active { color: var(--gold); }
+        /* HEADER */
+        .header { background: #161a1e; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; z-index: 1000; top: 0; border-bottom: 1px solid #333; }
+        .logo { font-size: 22px; font-weight: 800; color: white; text-decoration: none; } .logo span { color: var(--gold); }
 
-        /* Sections */
-        .section { display: none; padding: 100px 5% 50px; min-height: 100vh; }
-        .section.active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* SECTIONS CONTROL */
+        .section { display: none; padding: 80px 5% 20px; animation: fadeIn 0.4s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Hero & Stats */
-        .hero { text-align: center; padding: 50px 0; }
-        .hero h1 { font-size: 3.5rem; margin-bottom: 20px; }
-        .hero-img { width: 300px; animation: float 4s ease-in-out infinite; margin: 30px 0; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        /* HERO SLIDER */
+        .hero-slider { position: relative; width: 100%; height: 200px; border-radius: 15px; overflow: hidden; margin-bottom: 20px; }
+        .slide { width: 100%; height: 100%; position: absolute; opacity: 0; transition: 1s; background-size: cover; background-position: center; }
+        .slide.active { opacity: 1; }
+        .slide-overlay { background: rgba(0,0,0,0.6); width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
 
-        .trust-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 40px; }
-        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #333; }
-        .stat-card h2 { color: var(--gold); font-size: 28px; }
+        /* CARDS & TABLES */
+        .card { background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; }
+        .balance-card { background: linear-gradient(135deg, #2b3139 0%, #161a1e 100%); text-align: center; padding: 30px; border: 1px solid var(--gold); }
+        .balance-card h1 { color: var(--gold); font-size: 35px; margin: 10px 0; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th { color: var(--text-gray); text-align: left; padding: 10px; border-bottom: 1px solid #333; }
+        td { padding: 12px 10px; border-bottom: 1px solid #222; }
 
-        /* Bot Cards */
-        .bot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 30px; }
-        .bot-card { background: var(--card-bg); border-radius: 15px; padding: 25px; border: 1px solid #333; transition: 0.3s; position: relative; overflow: hidden; }
-        .bot-card:hover { border-color: var(--gold); transform: translateY(-5px); }
-        .bot-card h3 { color: var(--gold); margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .bot-card .price { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-        .btn-gold { background: var(--gold); color: black; border: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
-
-        /* Live Market Analysis */
-        .market-analysis { background: #161a1e; padding: 20px; border-radius: 12px; margin-top: 30px; }
-        .market-grid { display: flex; gap: 20px; overflow-x: auto; padding: 10px 0; }
-        .coin-item { min-width: 150px; background: var(--card-bg); padding: 15px; border-radius: 8px; text-align: center; }
+        /* UTILITIES */
         .up { color: var(--success); } .down { color: var(--danger); }
+        .btn-main { width: 100%; padding: 14px; border-radius: 8px; border: none; background: var(--gold); color: black; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-main:active { transform: scale(0.98); }
+        .input-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #2b3139; color: white; margin-top: 5px; }
+        .tag { background: rgba(243, 186, 47, 0.1); color: var(--gold); padding: 4px 8px; border-radius: 4px; font-size: 10px; }
 
-        /* Admin Panel Styles */
-        .admin-box { background: #1e2329; border: 2px solid var(--danger); padding: 20px; border-radius: 10px; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+        /* BOTTOM NAVIGATION */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #161a1e; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; z-index: 1000; }
+        .nav-item { text-align: center; color: var(--text-gray); font-size: 10px; cursor: pointer; transition: 0.3s; }
+        .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
+        .nav-item.active { color: var(--gold); }
+
+        /* PROGRESS */
+        .progress-bg { background: #333; border-radius: 10px; height: 10px; margin: 10px 0; position: relative; }
+        .progress-fill { background: var(--gold); height: 100%; border-radius: 10px; transition: 1s; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo">HAKIM <span>AI</span></div>
-        <ul class="nav-links">
-            <li onclick="showSection('home')" class="active">Home</li>
-            <li onclick="showSection('dashboard')">Dashboard</li>
-            <li onclick="showSection('bots')">Rent Bot</li>
-            <li onclick="showSection('my-bots')">My Bot</li>
-            <li onclick="showSection('leaderboard')">Leadership</li>
-            <li onclick="showSection('profile')">Profile</li>
-            <li onclick="showSection('admin')" id="adminLink" style="display:none; color: #f6465d;">Admin</li>
-        </ul>
-    </nav>
+    <header class="header">
+        <a href="#" class="logo">HAKIM <span>AI</span></a>
+        <div id="user-status" style="font-size: 12px; color: var(--gold);"><i class="fas fa-crown"></i> Silver</div>
+    </header>
 
     <div id="home" class="section active">
-        <div class="hero">
-            <h1>QUANTUM <span style="color:var(--gold)">ARBITRAGE</span></h1>
-            <p>Sirdoonka Macmalka ah oo kuu samaynaya faa'iido 24/7 ah.</p>
-            <img src="https://i.postimg.cc/mD8x1C6K/quantum-bot.png" alt="AI Bot" class="hero-img">
+        <div class="hero-slider">
+            <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1000');">
+                <div class="slide-overlay"><h2>QUANTUM ARBITRAGE</h2><p>AI-Powered Crypto Profits</p></div>
+            </div>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1621761126064-fdd17872927a?q=80&w=1000');">
+                <div class="slide-overlay"><h2>SECURE & FAST</h2><p>Instant BSC Transactions</p></div>
+            </div>
         </div>
 
-        <div class="market-analysis">
-            <h3><i class="fas fa-chart-line"></i> Live Market Analysis</h3>
-            <div id="market-data" class="market-grid">
-                </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
+            <div class="card" style="padding:15px;"><small>Trust Volume</small><h3 id="trustVol">$2,345,670</h3></div>
+            <div class="card" style="padding:15px;"><small>Active Bots</small><h3>45,120</h3></div>
+            <div class="card" style="padding:15px;"><small>Daily Payouts</small><h3 class="up">$12,450</h3></div>
+            <div class="card" style="padding:15px;"><small>Online Users</small><h3>1,420</h3></div>
         </div>
 
-        <div class="trust-stats">
-            <div class="stat-card"><h2>$2.3M+</h2><p>Trust Volume</p></div>
-            <div class="stat-card"><h2>200K+</h2><p>Global Users</p></div>
-            <div class="stat-card"><h2>99.9%</h2><p>Uptime Accuracy</p></div>
+        <div class="card" style="padding: 0; overflow: hidden; height: 350px;">
+            <div id="tradingview_widget" style="height: 100%;"></div>
+        </div>
+    </div>
+
+    <div id="dashboard" class="section">
+        <div class="card balance-card">
+            <p>Main Balance</p>
+            <h1>$1,250.45</h1>
+            <div style="display: flex; justify-content: center; gap: 15px;">
+                <span class="tag">USDT (BEP20)</span>
+                <span class="tag" style="background:rgba(14, 203, 129, 0.1); color:var(--success);">Active</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h4><i class="fas fa-arrow-down" style="color:var(--success)"></i> Deposit Funds</h4>
+            <p style="font-size: 11px; color: var(--text-gray); margin: 10px 0;">Kaliya u soo dir USDT (BEP20) address-kan:</p>
+            <div style="display:flex; gap:10px;">
+                <input type="text" value="0x71C7656EC7ab88b098defB751B7401B5f6d8976F" id="walletAddr" class="input-box" readonly>
+                <button onclick="copyText('walletAddr')" style="background:var(--gold); border:none; padding:10px; border-radius:8px; margin-top:5px;"><i class="fas fa-copy"></i></button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h4><i class="fas fa-arrow-up" style="color:var(--danger)"></i> Withdraw</h4>
+            <div style="margin-top:10px;">
+                <label style="font-size:12px;">Amount ($)</label>
+                <input type="number" class="input-box" placeholder="Min $10">
+                <label style="font-size:12px; margin-top:10px; display:block;">Payment Password</label>
+                <input type="password" class="input-box" placeholder="****">
+                <button class="btn-main" style="margin-top:15px;">Send Withdrawal</button>
+            </div>
         </div>
     </div>
 
     <div id="bots" class="section">
-        <h2 style="text-align: center;">Kireyso Quantum Bot</h2>
-        <div class="bot-grid" id="botPlans">
-            </div>
+        <h3 style="margin-bottom:15px;">Kireyso Arbitrage Bot</h3>
+        <div id="botsContainer"></div>
     </div>
 
-    <div id="my-bots" class="section">
-        <h2><i class="fas fa-microchip"></i> Bot-yada ii shaqaynaya</h2>
-        <div class="bot-grid" id="activeBots">
-            <div class="bot-card">
-                <h3>Kaspa Bot</h3>
-                <p>Profit: <span class="up">+$3.33 Daily</span></p>
-                <p>Days Left: 145 / 150</p>
-                <p>Status: <span style="color:var(--success)">Running...</span></p>
+    <div id="my-bot" class="section">
+        <h3>Bot-yada ii shaqaynaya</h3>
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4>Kaspa Bot</h4>
+                <span class="tag" style="color:var(--success)">Running</span>
+            </div>
+            <div style="margin:15px 0;">
+                <p style="font-size:13px;">Daily Profit: <b class="up">+$3.33</b></p>
+                <p style="font-size:13px;">Total Earned: <b class="up">$145.20</b></p>
+            </div>
+            <p style="font-size:11px; color:var(--text-gray);">Progress (5 Months Plan):</p>
+            <div class="progress-bg"><div class="progress-fill" style="width: 40%;"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-gray);">
+                <span>Maalinta 60-aad</span>
+                <span>90 Maalmood u dhiman</span>
             </div>
         </div>
     </div>
 
-    <div id="profile" class="section">
-        <h2><i class="fas fa-user-shield"></i> Profile & Ammaanka</h2>
-        <div class="stat-card" style="text-align: left; margin-top: 20px;">
-            <p>Email: <b>shueb@example.com</b></p>
-            <p>Account Status: <span class="up">Verified</span></p>
-            <hr style="margin:15px 0; border:0.1px solid #333;">
-            <h4>Security Settings</h4>
-            <button class="btn-gold" onclick="setup2FA()" style="width:auto; margin-right:10px;">Setup Google 2FA</button>
-            <button class="btn-gold" onclick="changePayPass()" style="width:auto; background:#333; color:white;">Update Payment Password</button>
+    <div id="leaderboard" class="section">
+        <h3>Leadership Ranks</h3>
+        <div class="card">
+            <div style="display:flex; justify-content:space-between;">
+                <b>CURRENT RANK: <span style="color:var(--gold)">SILVER</span></b>
+                <span class="tag">$400 Salary</span>
+            </div>
+            <div class="progress-bg" style="margin-top:15px;"><div class="progress-fill" style="width: 65%;"></div></div>
+            <p style="font-size:11px;">Next Rank: <b>GOLD</b> (Need 7 more referrals)</p>
         </div>
-    </div>
 
-    <div id="admin" class="section">
-        <h2 style="color:var(--danger)">Admin Control Panel</h2>
-        <div class="admin-box">
-            <h3>KYC Verification Requests</h3>
+        <div class="card" style="padding:10px;">
+            <h4 style="padding:10px;">Top 20 Investors</h4>
             <table>
-                <tr>
+                <tr style="background:#161a1e;">
                     <th>User</th>
-                    <th>ID Image</th>
-                    <th>Action</th>
+                    <th>Balance</th>
+                    <th>Rank</th>
                 </tr>
                 <tr>
-                    <td>Ali Ahmed</td>
-                    <td><button onclick="viewID()">View ID</button></td>
-                    <td>
-                        <button style="background:var(--success); border:none; padding:5px; color:white;">Approve</button>
-                        <button style="background:var(--danger); border:none; padding:5px; color:white;">Reject</button>
-                    </td>
+                    <td>Shueb ***</td>
+                    <td class="up">$12,450</td>
+                    <td><span class="tag">Manager</span></td>
                 </tr>
             </table>
         </div>
     </div>
 
+    <div id="history" class="section">
+        <h3>Transaction History</h3>
+        <div class="card" style="padding:0;">
+            <table>
+                <tr>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    <td>Deposit</td>
+                    <td class="up">+$500.00</td>
+                    <td><span class="tag" style="color:var(--success)">Success</span></td>
+                </tr>
+                <tr>
+                    <td>Withdraw</td>
+                    <td class="down">-$50.00</td>
+                    <td><span class="tag" style="color:var(--gold)">Pending</span></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div id="profile" class="section">
+        <div class="card" style="text-align:center;">
+            <i class="fas fa-user-circle" style="font-size:50px; color:var(--gold);"></i>
+            <h3 style="margin-top:10px;">Shueb Abdullahi</h3>
+            <p style="font-size:12px; color:var(--text-gray);">ID: 887261 | Rank: Silver</p>
+        </div>
+
+        <div class="card">
+            <h4>KYC Verification</h4>
+            <p style="font-size:11px; margin-bottom:10px;">Geli sawirka ID-gaaga si aad u xaqiijiso akoonka.</p>
+            <input type="file" class="input-box" style="font-size:12px;">
+            <button class="btn-main" style="margin-top:10px; background:#333; color:white;">Submit KYC</button>
+        </div>
+
+        <div class="card">
+            <h4>Security</h4>
+            <button class="btn-main" style="margin-top:10px; background:#161a1e; border:1px solid #444; color:white;">Setup 2FA (Google)</button>
+            <button class="btn-main" style="margin-top:10px; background:#161a1e; border:1px solid #444; color:white;">Change Pay Password</button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="showSection('home')"><i class="fas fa-home"></i>Home</div>
+        <div class="nav-item" onclick="showSection('dashboard')"><i class="fas fa-wallet"></i>Wallet</div>
+        <div class="nav-item" onclick="showSection('bots')"><i class="fas fa-robot"></i>Bots</div>
+        <div class="nav-item" onclick="showSection('history')"><i class="fas fa-history"></i>History</div>
+        <div class="nav-item" onclick="showSection('profile')"><i class="fas fa-user"></i>Profile</div>
+    </nav>
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // Navigation Logic
+        // TRADING VIEW
+        new TradingView.widget({
+            "width": "100%", "height": "100%", "symbol": "BINANCE:BTCUSDT",
+            "interval": "1", "theme": "dark", "style": "1", "container_id": "tradingview_widget", "hide_top_toolbar": true
+        });
+
+        // SECTION NAVIGATION
         function showSection(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            window.scrollTo(0,0);
         }
 
-        // Live Market Simulation
-        function updateMarket() {
-            const market = document.getElementById('market-data');
-            const coins = [
-                {name: 'BTC/USDT', price: 64120, change: '+2.4%'},
-                {name: 'ETH/USDT', price: 3450, change: '+1.8%'},
-                {name: 'BNB/USDT', price: 580, change: '-0.5%'},
-                {name: 'SOL/USDT', price: 145, change: '+5.2%'}
-            ];
-            market.innerHTML = coins.map(c => `
-                <div class="coin-item">
-                    <b>${c.name}</b><br>
-                    <span class="price">$${c.price}</span><br>
-                    <span class="${c.change.includes('+') ? 'up' : 'down'}">${c.change}</span>
-                </div>
-            `).join('');
-        }
-        setInterval(updateMarket, 3000);
-        updateMarket();
+        // SLIDER
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 4000);
 
-        // Bot Plans Data
-        const plans = [
-            {name: 'Nano Bot', price: 49.99, daily: 1.66},
-            {name: 'Kaspa Bot', price: 99.99, daily: 3.33},
-            {name: 'Aleph Zero', price: 199.99, daily: 6.66},
-            {name: 'Cardano Bot', price: 399.99, daily: 13.33},
-            {name: 'Moonbeam', price: 499.99, daily: 16.66},
-            {name: 'Polkadot Bot', price: 599.99, daily: 20.00}
+        // BOTS RENDER
+        const bots = [
+            { name: "Nano Bot", price: 49.99, daily: 1.66 },
+            { name: "Kaspa Bot", price: 99.99, daily: 3.33 },
+            { name: "Aleph Zero", price: 199.99, daily: 6.66 },
+            { name: "Cardano Bot", price: 399.99, daily: 13.33 },
+            { name: "Moonbeam", price: 499.99, daily: 16.66 },
+            { name: "Polkadot Bot", price: 599.99, daily: 20.00 }
         ];
 
-        document.getElementById('botPlans').innerHTML = plans.map(p => `
-            <div class="bot-card">
-                <h3>${p.name}</h3>
-                <p class="price">$${p.price}</p>
-                <p>Daily Profit: <span class="up">+$${p.daily}</span></p>
-                <p>Duration: 5 Months</p>
-                <button class="btn-gold" onclick="rentBot('${p.name}')">Rent Now</button>
+        document.getElementById('botsContainer').innerHTML = bots.map(b => `
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4>${b.name}</h4>
+                    <span class="tag">150 Days</span>
+                </div>
+                <h2 style="margin:10px 0;">$${b.price}</h2>
+                <p style="font-size:13px; color:var(--text-gray);">Daily Profit: <b class="up">+$${b.daily}</b></p>
+                <button class="btn-main" style="margin-top:15px;" onclick="rentBot('${b.name}')">Rent Bot Now</button>
             </div>
         `).join('');
 
         function rentBot(name) {
-            Swal.fire('Guul!', `${name} si guul leh ayaad ugu kireysatay. Faa'iidadaadu waxay bilaaban doontaa 24 saac ka dib.`, 'success');
+            Swal.fire('Guul!', `${name} si guul leh ayaad u kireysatay.`, 'success');
         }
 
-        // Live Chat Support Alert
-        window.onload = function() {
-            console.log("Hakim AI Initialized...");
+        function copyText(id) {
+            const input = document.getElementById(id);
+            input.select();
+            document.execCommand("copy");
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'La koobiyeeyay!', showConfirmButton: false, timer: 1500 });
         }
     </script>
 </body>
