@@ -390,7 +390,59 @@
 
   // Hide all sections initially, show home
   document.querySelectorAll('.container section').forEach(s=>s.style.display='none');
+ 
   document.getElementById('home').style.display='flex';
 </script>
 </body>
 </html>
+<script>
+  const canvas = document.querySelector(".particles");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let particlesArray = [];
+  const colors = ["#FFD700","#ffffff","#ffcc00"];
+
+  class Particle {
+    constructor(x,y,size,color){
+      this.x=x; this.y=y; this.size=size; this.color=color;
+      this.speedX=Math.random()*2-1;
+      this.speedY=Math.random()*2-1;
+    }
+    update(){
+      this.x+=this.speedX; this.y+=this.speedY;
+      if(this.size>0.2) this.size-=0.02;
+    }
+    draw(){
+      ctx.fillStyle=this.color;
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function init(){
+    particlesArray=[];
+    for(let i=0;i<100;i++){
+      let size=Math.random()*5+1;
+      let x=Math.random()*canvas.width;
+      let y=Math.random()*canvas.height;
+      let color=colors[Math.floor(Math.random()*colors.length)];
+      particlesArray.push(new Particle(x,y,size,color));
+    }
+  }
+
+  function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<particlesArray.length;i++){
+      particlesArray[i].update();
+      particlesArray[i].draw();
+    }
+    requestAnimationFrame(animate);
+  }
+
+  init();
+  animate();
+</script>
+
