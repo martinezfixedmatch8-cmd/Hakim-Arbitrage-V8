@@ -400,3 +400,8 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`✅ MongoDB: ${mongoose.connection.readyState === 1 ? "Connected" : "Disconnected"}`);
 });
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
