@@ -1,221 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>HAKIM AI | Arbitrage Trading Bot</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0c10; color: #f3ba2f; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-    
-    /* Animated Background */
-    .bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(circle at 20% 30%, #0f1218, #050608); }
-    .bg-animation::before { content: ''; position: absolute; width: 150%; height: 150%; top: -25%; left: -25%; background: radial-gradient(circle, rgba(243, 186, 47, 0.08) 0%, transparent 70%); animation: rotateBg 30s linear infinite; }
-    @keyframes rotateBg { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    
-    /* Particles */
-    .particles { position: fixed; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
-    .particle { position: absolute; background: #f3ba2f; border-radius: 50%; opacity: 0.05; animation: float linear infinite; }
-    @keyframes float { 0% { transform: translateY(100vh) rotate(0deg); opacity: 0; } 10% { opacity: 0.1; } 90% { opacity: 0.1; } 100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; } }
-    
-    /* Header */
-    .header { background: rgba(16, 18, 23, 0.95); backdrop-filter: blur(20px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid rgba(255,215,0,0.2); position: sticky; top: 0; z-index: 1000; }
-    .logo { font-family: 'Orbitron'; font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #f3ba2f, #ffd700); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
-    .nav-links a { color: #8a92a3; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; cursor: pointer; }
-    .nav-links a:hover, .nav-links a.active { color: #f3ba2f; }
-    
-    /* Hero */
-    .hero { width: 100%; height: 350px; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1200'); background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; animation: fadeInUp 1s ease; }
-    .hero h1 { font-family: 'Orbitron'; font-size: 42px; margin-bottom: 15px; text-shadow: 0 0 20px rgba(243,186,47,0.5); }
-    .hero p { font-size: 18px; color: #8a92a3; max-width: 600px; margin-bottom: 25px; }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    
-    /* Container */
-    .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
-    
-    /* Cards */
-    .card { background: rgba(30, 35, 41, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
-    .card:hover { transform: translateY(-5px); border-color: #f3ba2f; box-shadow: 0 10px 30px rgba(243,186,47,0.1); }
-    
-    /* Grids */
-    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin: 30px 0; }
-    .bot-card { background: rgba(30,35,41,0.8); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; text-align: center; transition: 0.3s; }
-    .bot-card:hover { transform: translateY(-5px); border-color: #f3ba2f; }
-    .bot-img { width: 80px; height: 80px; margin: 0 auto 15px; background: linear-gradient(135deg, #f3ba2f, #d49a1a); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
-    
-    /* Buttons */
-    .btn-primary { background: linear-gradient(135deg, #f3ba2f, #d49a1a); border: none; padding: 12px 24px; border-radius: 12px; color: #0a0c10; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(243,186,47,0.3); }
-    .btn-outline { background: transparent; border: 1px solid #f3ba2f; padding: 12px; border-radius: 12px; color: #f3ba2f; font-weight: 600; cursor: pointer; transition: 0.3s; width: 100%; }
-    .btn-outline:hover { background: rgba(243,186,47,0.1); }
-    
-    /* Inputs */
-    input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; }
-    input:focus, textarea:focus { outline: none; border-color: #f3ba2f; }
-    
-    /* Tables */
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    th { color: #f3ba2f; }
-    
-    /* Rank Item */
-    .rank-item { background: rgba(30,35,41,0.5); border-radius: 16px; padding: 15px; text-align: center; }
-    .rank-salary { font-size: 24px; font-weight: bold; color: #f3ba2f; margin: 10px 0; }
-    .progress-bar { background: #2a2e38; border-radius: 10px; height: 6px; overflow: hidden; margin: 10px 0; }
-    .progress-fill { background: #f3ba2f; height: 100%; width: 0%; transition: width 0.5s; }
-    
-    /* Bottom Navigation */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(16,18,23,0.98); backdrop-filter: blur(20px); display: none; justify-content: space-around; padding: 10px 0 20px 0; border-top: 1px solid rgba(255,215,0,0.2); z-index: 100; }
-    .nav-btn { text-align: center; color: #8a92a3; cursor: pointer; flex: 1; transition: 0.3s; }
-    .nav-btn.active { color: #f3ba2f; transform: translateY(-3px); }
-    .nav-btn i { font-size: 22px; display: block; margin-bottom: 4px; }
-    .nav-btn span { font-size: 10px; }
-    
-    /* Live Chat */
-    .live-chat { position: fixed; bottom: 80px; right: 20px; z-index: 1000; }
-    .chat-btn { background: #f3ba2f; color: black; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 24px; box-shadow: 0 5px 20px rgba(243,186,47,0.4); }
-    .chat-box { background: #1e2329; border-radius: 16px; width: 280px; padding: 15px; position: absolute; bottom: 70px; right: 0; display: none; }
-    
-    /* Sections */
-    .section { display: none; animation: fadeIn 0.4s ease; }
-    .section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    
-    /* Notice */
-    .notice { background: #8b0000; padding: 15px; border-radius: 12px; text-align: center; margin: 20px 0; }
-    
-    /* Responsive */
-    @media (max-width: 768px) { .nav-links { display: none; } .bottom-nav { display: flex; } .hero h1 { font-size: 28px; } .hero { height: 280px; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Hakim AI Arbitrage</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Poppins',sans-serif; background:#05070a; color:#FFD700; overflow-x:hidden; }
+  
+  /* Particles Canvas */
+  .particles { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
+  
+  /* Navbar */
+  nav { background:rgba(17,17,17,0.9); backdrop-filter:blur(10px); padding:15px 20px; display:flex; justify-content:space-between; align-items:center; position:fixed; width:100%; top:0; z-index:1000; flex-wrap:wrap; gap:10px; }
+  nav a { color:#FFD700; margin:0 8px; text-decoration:none; font-weight:bold; transition:0.3s; font-size:14px; }
+  nav a:hover { color:#fff; transform:scale(1.1); }
+  
+  /* Hero Section */
+  .hero { height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; color:#fff; animation:fadeIn 2s ease; background:linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1200'); background-size:cover; background-position:center; position:relative; }
+  .hero h1 { font-size:3em; margin:0; z-index:1; }
+  .hero p { font-size:1.2em; z-index:1; margin:15px 0; }
+  .hero button { z-index:1; }
+  
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  
+  /* Container */
+  .container { padding:100px 20px 30px; max-width:1000px; margin:auto; }
+  
+  /* Cards */
+  .card { background:rgba(34,34,34,0.6); backdrop-filter:blur(10px); padding:25px; border-radius:15px; margin:20px 0; transition:0.3s; border:1px solid rgba(255,215,0,0.1); }
+  .card:hover { transform:translateY(-5px); box-shadow:0 0 20px #FFD700; }
+  
+  /* Buttons */
+  button { background:#FFD700; border:none; padding:12px 24px; cursor:pointer; font-weight:bold; transition:0.3s; border-radius:8px; color:#000; }
+  button:hover { transform:scale(1.05); background:#fff; }
+  
+  /* Inputs */
+  input, select { width:100%; padding:12px; margin:10px 0; border-radius:8px; border:1px solid #FFD700; background:#111; color:#FFD700; }
+  input:focus { outline:none; box-shadow:0 0 10px #FFD700; }
+  
+  /* Tables */
+  table { width:100%; border-collapse:collapse; }
+  th, td { padding:12px; text-align:left; border-bottom:1px solid rgba(255,215,0,0.2); }
+  th { color:#FFD700; }
+  
+  /* Grid */
+  .grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+  
+  /* Responsive */
+  @media (max-width:768px) { nav { flex-direction:column; } nav div { display:flex; flex-wrap:wrap; justify-content:center; } .hero h1 { font-size:28px; } }
+</style>
 </head>
 <body>
 
-<div class="bg-animation"></div>
-<div class="particles" id="particles"></div>
+<canvas class="particles"></canvas>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="logo">HAKIM<span style="color:white;">AI</span></div>
-  <div class="nav-links">
-    <a onclick="showSection('home')">Home</a>
-    <a onclick="showSection('pricing')">Pricing</a>
-    <a onclick="showSection('faq')">FAQ</a>
-    <a onclick="showSection('terms')">Terms</a>
-    <a onclick="showSection('dashboard')">Dashboard</a>
-    <a onclick="showSection('referral')">Referral</a>
-    <a onclick="showSection('leaderboard')">Leaderboard</a>
-    <a onclick="showSection('history')">History</a>
-    <a onclick="showSection('kyc')">KYC</a>
-    <a onclick="showSection('reset')">Reset</a>
+<!-- NAVBAR -->
+<nav>
+  <h2><i class="fa-solid fa-robot"></i> Hakim AI</h2>
+  <div>
+    <a href="#home" onclick="showSection('home');return false;">Home</a>
+    <a href="#auth" onclick="showSection('auth');return false;">Register</a>
+    <a href="#login" onclick="showSection('login');return false;">Login</a>
+    <a href="#dashboard" onclick="showSection('dashboard');return false;">Dashboard</a>
+    <a href="#pricing" onclick="showSection('pricing');return false;">Pricing</a>
+    <a href="#referral" onclick="showSection('referral');return false;">Referral</a>
+    <a href="#leaderboard" onclick="showSection('leaderboard');return false;">Leaderboard</a>
+    <a href="#history" onclick="showSection('history');return false;">History</a>
+    <a href="#kyc" onclick="showSection('kyc');return false;">KYC</a>
+    <a href="#reset" onclick="showSection('reset');return false;">Reset</a>
+    <a href="#admin" onclick="showSection('admin');return false;">Admin</a>
+    <a href="#faq" onclick="showSection('faq');return false;">FAQ</a>
+    <a href="#terms" onclick="showSection('terms');return false;">Terms</a>
   </div>
-</div>
+</nav>
 
-<!-- ==================== SECTIONS ==================== -->
+<!-- HERO SECTION -->
+<section id="home" class="hero">
+  <h1>🚀 Hakim AI Arbitrage</h1>
+  <p>Trade smarter. Earn daily profits with AI-powered bots.</p>
+  <button onclick="showSection('dashboard')">Get Started</button>
+</section>
 
-<!-- HOME SECTION -->
-<div id="home" class="section active">
-  <div class="hero">
-    <h1>🚀 Hakim AI Arbitrage Bot</h1>
-    <p>Trade smarter with AI powered arbitrage bots. Earn daily profits while you sleep 24/7.</p>
-    <button class="btn-primary" style="width: auto;" onclick="showSection('dashboard')">Get Started</button>
-  </div>
-  <div class="container">
-    <div class="grid-3">
-      <div class="bot-card"><div class="bot-img">🤖</div><h3>Real Bots</h3><p>Automated arbitrage bots running 24/7 across multiple exchanges.</p></div>
-      <div class="bot-card"><div class="bot-img">📈</div><h3>Live Trading</h3><p>Monitor trades in real-time with integrated charts.</p></div>
-      <div class="bot-card"><div class="bot-img">💬</div><h3>Live Chat</h3><p>Get instant support from our AI assistant and live agents.</p></div>
+<div class="container">
+  <!-- REGISTER SECTION -->
+  <section id="auth" class="card">
+    <h2><i class="fa-solid fa-user-plus"></i> Register</h2>
+    <input id="regName" placeholder="Full Name">
+    <input id="regEmail" placeholder="Email">
+    <input id="regPass" type="password" placeholder="Password">
+    <button onclick="register()">Register</button>
+  </section>
+
+  <!-- LOGIN SECTION -->
+  <section id="login" class="card">
+    <h2><i class="fa-solid fa-key"></i> Login</h2>
+    <input id="loginEmail" placeholder="Email">
+    <input id="loginPass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </section>
+
+  <!-- DASHBOARD SECTION -->
+  <section id="dashboard" class="card">
+    <h2><i class="fa-solid fa-chart-line"></i> Dashboard</h2>
+    <p>Balance: <strong id="balance">$0.00</strong></p>
+    <div class="grid-2">
+      <div><h3>Deposit</h3><input id="depAmount" placeholder="Amount (USDT)"><button onclick="deposit()">Deposit</button></div>
+      <div><h3>Withdraw</h3><input id="wdAmount" placeholder="Amount"><input id="wdAddress" placeholder="Wallet Address"><button onclick="withdraw()">Withdraw</button></div>
     </div>
-    <div class="notice"><h3>⚠️ Important Deposit Notice</h3><p>Please double-check your deposit address before sending funds. Wrong deposits cannot be recovered.</p></div>
-  </div>
-</div>
+  </section>
 
-<!-- LOGIN & REGISTER SECTION -->
-<div id="auth" class="section">
-  <div class="container">
-    <div class="grid-3">
-      <div class="card"><h2 style="color:#f3ba2f;">📝 Register</h2><input id="regName" placeholder="Full Name"><input id="regEmail" placeholder="Email"><input id="regPass" type="password" placeholder="Password"><button class="btn-primary" onclick="register()">Register</button></div>
-      <div class="card"><h2 style="color:#f3ba2f;">🔐 Login</h2><input id="loginEmail" placeholder="Email"><input id="loginPass" type="password" placeholder="Password"><button class="btn-primary" onclick="login()">Login</button></div>
+  <!-- PRICING SECTION -->
+  <section id="pricing" class="card">
+    <h2><i class="fa-solid fa-tags"></i> Pricing Plans</h2>
+    <div class="grid-2">
+      <div class="card"><h3>Nano Bot</h3><p>$10/month – $1 daily profit</p><button>Select</button></div>
+      <div class="card"><h3>Alpha Bot</h3><p>$50/month – $3.5 daily profit</p><button>Select</button></div>
+      <div class="card"><h3>Legend Bot</h3><p>$300/month – $23 daily profit</p><button>Select</button></div>
     </div>
-  </div>
+  </section>
+
+  <!-- REFERRAL SECTION -->
+  <section id="referral" class="card">
+    <h2><i class="fa-solid fa-users"></i> Referral</h2>
+    <p>Referrals: <span id="refCount">0</span></p>
+    <p>Earnings: $<span id="refEarnings">0</span></p>
+    <p>Rank: <span id="userRank">TRAINEE</span></p>
+    <p>Your Referral Link: <strong id="refLink">Loading...</strong></p>
+    <button onclick="copyRefLink()">Copy Link</button>
+  </section>
+
+  <!-- LEADERBOARD SECTION -->
+  <section id="leaderboard" class="card">
+    <h2><i class="fa-solid fa-trophy"></i> Leaderboard</h2>
+    <div class="grid-2">
+      <div><h3>TRAINEE</h3><p>$0/month</p><p>0 referrals</p></div>
+      <div><h3>BEGINNER</h3><p>$50/month</p><p>5 referrals</p></div>
+      <div><h3>SILVER</h3><p>$100/month</p><p>20 referrals</p></div>
+      <div><h3>GOLD</h3><p>$300/month</p><p>5 Silver leaders</p></div>
+      <div><h3>DIAMOND</h3><p>$1000/month</p><p>10 Gold leaders</p></div>
+      <div><h3>MANAGER</h3><p>$2000/month</p><p>5 Diamond leaders</p></div>
+    </div>
+  </section>
+
+  <!-- HISTORY SECTION -->
+  <section id="history" class="card">
+    <h2><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</h2>
+    <table>
+      <thead><tr><th>Type</th><th>Amount</th><th>TXID</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody id="historyBody"><tr><td colspan="5">No transactions yet</td></tr></tbody>
+    </table>
+  </section>
+
+  <!-- KYC SECTION -->
+  <section id="kyc" class="card">
+    <h2><i class="fa-solid fa-id-card"></i> KYC Verification</h2>
+    <input type="file" id="kycFile" accept="image/*">
+    <button onclick="uploadKYC()">Submit KYC</button>
+    <div id="kycList"></div>
+  </section>
+
+  <!-- RESET PASSWORD SECTION -->
+  <section id="reset" class="card">
+    <h2><i class="fa-solid fa-lock"></i> Reset Password</h2>
+    <input id="resetEmail" placeholder="Email">
+    <button onclick="resetPasswordRequest()">Send Code</button>
+    <input id="resetCode" placeholder="Reset Code">
+    <input id="newPassword" type="password" placeholder="New Password">
+    <button onclick="resetPasswordConfirm()">Reset Password</button>
+  </section>
+
+  <!-- ADMIN SECTION -->
+  <section id="admin" class="card">
+    <h2><i class="fa-solid fa-user-shield"></i> Admin Panel</h2>
+    <button onclick="loadKYC()">Load KYC Requests</button>
+    <div id="adminKycList"></div>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section id="faq" class="card">
+    <h2><i class="fa-solid fa-question-circle"></i> FAQ</h2>
+    <p><b>❓ How does Hakim AI Arbitrage work?</b><br>It automates trading bots to find price differences across exchanges and execute profitable trades 24/7.</p>
+    <p><b>❓ How do I withdraw?</b><br>Go to Dashboard → Withdraw form. Minimum withdrawal is $10 USDT.</p>
+    <p><b>❓ Is my money safe?</b><br>Yes, funds are stored in secured wallets with 2FA and admin approval for withdrawals.</p>
+  </section>
+
+  <!-- TERMS SECTION -->
+  <section id="terms" class="card">
+    <h2><i class="fa-solid fa-file-contract"></i> Terms & Conditions</h2>
+    <p>By using Hakim AI Arbitrage, you agree to our trading rules, risk disclaimers, and compliance with KYC/AML regulations. Trading involves risk. We do not guarantee profits.</p>
+  </section>
 </div>
 
-<!-- PRICING SECTION -->
-<div id="pricing" class="section">
-  <div class="container"><h2 style="color:#f3ba2f; margin-bottom:25px;">🚀 AI Bot Pricing</h2><div class="grid-3" id="pricingGrid"></div></div>
-</div>
-
-<!-- FAQ SECTION -->
-<div id="faq" class="section">
-  <div class="container"><h2 style="color:#f3ba2f; margin-bottom:25px;">❓ FAQ</h2><div id="faqList"></div></div>
-</div>
-
-<!-- TERMS SECTION -->
-<div id="terms" class="section">
-  <div class="container"><div class="card"><h2 style="color:#f3ba2f;">📜 Terms & Conditions</h2><ul style="margin-top:20px; padding-left:20px;"><li>One account per user — no multiple accounts allowed.</li><li>Minimum deposit: $30 USDT (BEP20).</li><li>Withdrawals take up to 24 hours to process.</li><li>All deposits are final — no refunds after confirmation.</li><li>⚠️ Risk Disclaimer: Trading involves risk. Hakim AI does not guarantee profits.</li></ul></div></div>
-</div>
-
-<!-- DASHBOARD SECTION -->
-<div id="dashboard" class="section">
-  <div class="container">
-    <div class="card" style="text-align:center;"><h2>💰 Welcome, <span id="userName">Guest</span></h2><div style="font-family:'Orbitron'; font-size:48px; color:#f3ba2f; margin:15px 0;" id="userBalance">$0.00</div></div>
-    <div class="card"><h3>📥 Your Personal Deposit Addresses</h3><p><strong>TRC20:</strong> <span id="trc20Addr">Loading...</span></p><p><strong>BEP20:</strong> <span id="bep20Addr">Loading...</span></p><p style="color:#f6465d; font-size:12px;">⚠️ These addresses are unique to your account. Send only USDT.</p></div>
-    <div class="card"><h3>📤 Withdraw</h3><input type="number" id="wdAmount" placeholder="Amount (USDT) - Min $10"><input type="text" id="wdAddress" placeholder="BEP20/TRC20 Wallet Address"><input type="text" id="emailCode" placeholder="Email Verification Code"><input type="text" id="twoFACode" placeholder="Google Authenticator Code"><button class="btn-primary" onclick="withdrawConfirm()">Confirm Withdrawal</button></div>
-    <div class="card"><h3>👥 Referral Link</h3><div style="background:#0a0c10; padding:12px; border-radius:10px; font-size:12px; margin:10px 0;" id="refLink">Loading...</div><button class="btn-outline" onclick="copyRefLink()">Copy Link</button></div>
-    <div class="card"><h3>📢 Announcements</h3><div id="announcementsList">Loading...</div></div>
-  </div>
-</div>
-
-<!-- REFERRAL SECTION -->
-<div id="referral" class="section">
-  <div class="container"><div class="card"><h2>👥 Referral Program</h2><p>Share your link and earn commissions!</p><div style="background:#0a0c10; padding:12px; border-radius:10px; margin:15px 0;" id="refPageLink">Loading...</div><button class="btn-primary" onclick="copyRefPageLink()">Copy Link</button></div><div class="card"><h3>📊 Stats</h3><p>Total Referrals: <span id="refCount">0</span></p><p>Earnings: $<span id="refEarnings">0</span></p></div></div>
-</div>
-
-<!-- LEADERBOARD SECTION -->
-<div id="leaderboard" class="section">
-  <div class="container"><h2 style="color:#f3ba2f; text-align:center; margin-bottom:25px;">🏆 Leadership Program</h2><div class="grid-3" id="rankGrid"></div><div class="card"><h3>Your Rank: <span id="userRank">TRAINEE</span></h3><p>Direct Commission: <span id="directComm">5</span>%</p><p>Salary: $<span id="rankSalary">0</span>/month</p></div></div>
-</div>
-
-<!-- HISTORY SECTION -->
-<div id="history" class="section">
-  <div class="container"><h2 style="color:#f3ba2f;">📜 Transaction History</h2><div class="card"><div style="overflow-x:auto;"><table id="historyTable"><thead><tr><th>Type</th><th>Amount</th><th>TXID</th><th>Status</th><th>Date</th><tr></thead><tbody id="historyBody"></tbody></table></div></div></div>
-</div>
-
-<!-- KYC SECTION -->
-<div id="kyc" class="section">
-  <div class="container"><div class="card"><h2>🪪 KYC Verification</h2><input id="kycFile" placeholder="Upload ID file path"><button class="btn-primary" onclick="uploadKYC()">Submit KYC</button></div></div>
-</div>
-
-<!-- RESET PASSWORD SECTION -->
-<div id="reset" class="section">
-  <div class="container"><div class="card"><h2>🔑 Reset Password</h2><input id="resetEmail" placeholder="Email"><button class="btn-primary" onclick="resetPasswordRequest()">Send Code</button><input id="resetCode" placeholder="Reset Code"><input id="newPassword" type="password" placeholder="New Password"><button class="btn-primary" onclick="resetPasswordConfirm()">Reset Password</button></div></div>
-</div>
-
-<!-- BOTTOM NAVIGATION (MOBILE) -->
-<div class="bottom-nav">
-  <div class="nav-btn" onclick="showSection('home')"><i class="fas fa-home"></i><span>Home</span></div>
-  <div class="nav-btn" onclick="showSection('dashboard')"><i class="fas fa-chart-line"></i><span>Dashboard</span></div>
-  <div class="nav-btn" onclick="showSection('referral')"><i class="fas fa-users"></i><span>Invite</span></div>
-  <div class="nav-btn" onclick="showSection('leaderboard')"><i class="fas fa-crown"></i><span>Leader</span></div>
-  <div class="nav-btn" onclick="showSection('history')"><i class="fas fa-history"></i><span>History</span></div>
-</div>
-
-<!-- LIVE CHAT -->
-<div class="live-chat">
-  <div class="chat-btn" onclick="toggleChat()">💬</div>
-  <div class="chat-box" id="chatBox"><h4 style="color:#f3ba2f;">Live Chat</h4><textarea id="chatMessage" rows="3" placeholder="Type your message..."></textarea><button class="btn-primary" onclick="sendChatMessage()">Send</button></div>
-</div>
+<!-- LIVE CHAT BUTTON -->
+<button style="position:fixed;bottom:20px;right:20px;background:#FFD700;color:#000;border-radius:50%;width:55px;height:55px;font-size:24px;z-index:1000;" onclick="openChat()">💬</button>
 
 <script>
+  // ==================== PARTICLES ANIMATION ====================
+  const canvas = document.querySelector(".particles");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let particlesArray = [];
+  const colors = ["#FFD700","#ffffff","#ffcc00"];
+
+  class Particle {
+    constructor(x,y,size,color){
+      this.x=x; this.y=y; this.size=size; this.color=color;
+      this.speedX=Math.random()*1.5-0.75;
+      this.speedY=Math.random()*1.5-0.75;
+    }
+    update(){
+      this.x+=this.speedX; this.y+=this.speedY;
+      if(this.size>0.2) this.size-=0.008;
+    }
+    draw(){ ctx.fillStyle=this.color; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); }
+  }
+
+  function initParticles(){
+    particlesArray=[];
+    for(let i=0;i<80;i++){
+      let size=Math.random()*4+1;
+      let x=Math.random()*canvas.width;
+      let y=Math.random()*canvas.height;
+      let color=colors[Math.floor(Math.random()*colors.length)];
+      particlesArray.push(new Particle(x,y,size,color));
+    }
+  }
+
+  function animateParticles(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<particlesArray.length;i++){
+      particlesArray[i].update();
+      particlesArray[i].draw();
+    }
+    requestAnimationFrame(animateParticles);
+  }
+
+  initParticles();
+  animateParticles();
+  window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; initParticles(); });
+
+  // ==================== API INTEGRATION ====================
   const API_URL = "https://hakim-arbitrage-v8.up.railway.app";
   let currentUser = null;
-  
-  // ==================== PARTICLES ====================
-  for(let i=0;i<50;i++){ let p=document.createElement('div'); p.className='particle'; p.style.width=Math.random()*5+2+'px'; p.style.height=p.style.width; p.style.left=Math.random()*100+'%'; p.style.animationDuration=Math.random()*15+10+'s'; p.style.animationDelay=Math.random()*10+'s'; document.getElementById('particles').appendChild(p); }
-  
-  // ==================== AUTH ====================
+
+  // Show/Hide Sections
+  function showSection(id){
+    document.querySelectorAll('.container section').forEach(s=>s.style.display='none');
+    document.getElementById(id).style.display='block';
+    document.getElementById('home').style.display='none';
+  }
+
+  // Register
   async function register(){
     const name=document.getElementById("regName").value;
     const email=document.getElementById("regEmail").value;
@@ -223,143 +262,135 @@
     if(!name||!email||!password){ alert("Fill all fields"); return; }
     const res=await fetch(API_URL+"/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,email,password})});
     const data=await res.json();
-    if(data.success){ alert(`✅ Account created!\nYour BEP20: ${data.user.bep20Address}\nYour TRC20: ${data.user.trc20Address}`); showSection('auth'); }
+    if(data.success){ alert(`✅ Account created!\nYour BEP20: ${data.user.bep20Address}\nTRC20: ${data.user.trc20Address}`); showSection('login'); }
     else alert("Registration failed: "+data.message);
   }
-  
+
+  // Login
   async function login(){
     const email=document.getElementById("loginEmail").value;
     const password=document.getElementById("loginPass").value;
     if(!email||!password){ alert("Enter email and password"); return; }
     const res=await fetch(API_URL+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
     const data=await res.json();
-    if(data.success){ 
+    if(data.success){
       currentUser=data.user;
       localStorage.setItem("user",JSON.stringify(currentUser));
-      updateDashboard(currentUser);
+      updateDashboard();
       showSection('dashboard');
       alert(`✅ Welcome ${currentUser.name}!`);
     } else alert("Login failed: "+data.message);
   }
-  
-  function updateDashboard(user){
-    document.getElementById("userName").innerText=user.name;
-    document.getElementById("userBalance").innerText=`$${user.balance.toFixed(2)}`;
-    document.getElementById("trc20Addr").innerText=user.trc20Address;
-    document.getElementById("bep20Addr").innerText=user.bep20Address;
-    document.getElementById("refLink").innerHTML=`${window.location.origin}?ref=${user.referralCode}`;
-    document.getElementById("refPageLink").innerHTML=`${window.location.origin}?ref=${user.referralCode}`;
-    document.getElementById("userRank").innerText=user.rank;
-    loadAnnouncements();
-    loadReferralInfo(user.userId);
-    loadTransactionHistory(user.userId);
+
+  // Update Dashboard
+  function updateDashboard(){
+    if(!currentUser) return;
+    document.getElementById("balance").innerText=`$${currentUser.balance.toFixed(2)}`;
+    document.getElementById("refCount").innerText=currentUser.referralCount||0;
+    document.getElementById("refEarnings").innerText=currentUser.referralEarnings||0;
+    document.getElementById("userRank").innerText=currentUser.rank||"TRAINEE";
+    document.getElementById("refLink").innerText=`${window.location.origin}?ref=${currentUser.referralCode}`;
+    loadTransactionHistory();
   }
-  
-  // ==================== WITHDRAW ====================
-  async function withdrawConfirm(){
+
+  // Deposit
+  async function deposit(){
+    if(!currentUser){ alert("Please login first"); return; }
+    const amount=parseFloat(document.getElementById("depAmount").value);
+    if(!amount||amount<30){ alert("Minimum deposit $30"); return; }
+    const res=await fetch(API_URL+"/api/deposit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:currentUser.userId,amount,txid:"demoTX"+Date.now()})});
+    const data=await res.json();
+    alert(data.message);
+    if(data.success){ currentUser.balance+=amount; updateDashboard(); }
+  }
+
+  // Withdraw
+  async function withdraw(){
     if(!currentUser){ alert("Please login first"); return; }
     const amount=parseFloat(document.getElementById("wdAmount").value);
     const address=document.getElementById("wdAddress").value;
-    const emailCode=document.getElementById("emailCode").value;
-    const twoFACode=document.getElementById("twoFACode").value;
     if(!amount||amount<10){ alert("Minimum withdrawal $10"); return; }
-    const res=await fetch(API_URL+"/api/withdraw/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:currentUser.userId,amount,address,emailCode,twoFACode,paymentPassword:"demo123"})});
+    if(!address){ alert("Enter wallet address"); return; }
+    const res=await fetch(API_URL+"/api/withdraw/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:currentUser.userId,amount,address,emailCode:"123456",twoFACode:"000000",paymentPassword:"demo123"})});
     const data=await res.json();
     alert(data.message);
-    if(data.success) location.reload();
+    if(data.success){ currentUser.balance-=amount; updateDashboard(); }
   }
-  
-  // ==================== REFERRAL ====================
-  async function loadReferralInfo(userId){
-    const res=await fetch(API_URL+"/api/referral/"+userId);
-    const data=await res.json();
-    if(data.success){
-      document.getElementById("refCount").innerText=data.referrals;
-      document.getElementById("refEarnings").innerText=data.earnings;
-    }
-  }
-  
-  // ==================== HISTORY ====================
-  async function loadTransactionHistory(userId){
-    const res=await fetch(API_URL+"/api/history/"+userId);
+
+  // Transaction History
+  async function loadTransactionHistory(){
+    if(!currentUser) return;
+    const res=await fetch(API_URL+"/api/history/"+currentUser.userId);
     const data=await res.json();
     if(data.success){
       const tbody=document.getElementById("historyBody");
-      tbody.innerHTML=data.transactions.map(t=>`<tr><td>${t.type}</td><td>$${t.amount}</td><td>${t.txid}</td><td>${t.status}</td><td>${new Date(t.createdAt).toLocaleDateString()}</td></tr>`).join('');
+      if(data.transactions.length===0) tbody.innerHTML='<tr><td colspan="5">No transactions yet</td></tr>';
+      else tbody.innerHTML=data.transactions.map(t=>`<tr><td>${t.type}</td><td>$${t.amount}</td><td>${t.txid}</td><td>${t.status}</td><td>${new Date(t.createdAt).toLocaleDateString()}</td></tr>`).join('');
     }
   }
-  
-  // ==================== ANNOUNCEMENTS ====================
-  async function loadAnnouncements(){
-    const res=await fetch(API_URL+"/api/announcements");
-    const data=await res.json();
-    if(data.success) document.getElementById("announcementsList").innerHTML=data.announcements.map(a=>`<div style="padding:10px; background:rgba(0,0,0,0.3); margin-bottom:10px; border-radius:10px;"><h4>${a.title}</h4><p>${a.message}</p></div>`).join('');
-  }
-  
-  // ==================== KYC ====================
-  async function uploadKYC(){
-    if(!currentUser){ alert("Please login first"); return; }
-    const file=document.getElementById("kycFile").value;
-    const res=await fetch(API_URL+"/api/kyc/upload",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:currentUser.userId,file})});
-    const data=await res.json();
-    alert(data.message);
-  }
-  
-  // ==================== PASSWORD RESET ====================
+
+  // Reset Password
   async function resetPasswordRequest(){
     const email=document.getElementById("resetEmail").value;
+    if(!email){ alert("Enter email"); return; }
     const res=await fetch(API_URL+"/api/auth/reset-password-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
     const data=await res.json();
     alert(data.message);
   }
-  
+
   async function resetPasswordConfirm(){
     const email=document.getElementById("resetEmail").value;
     const code=document.getElementById("resetCode").value;
     const newPassword=document.getElementById("newPassword").value;
+    if(!email||!code||!newPassword){ alert("Fill all fields"); return; }
     const res=await fetch(API_URL+"/api/auth/reset-password-confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code,newPassword})});
     const data=await res.json();
     alert(data.message);
   }
-  
-  // ==================== UI FUNCTIONS ====================
-  function showSection(id){
-    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    if(id==='pricing') renderPricing();
-    if(id==='faq') renderFAQ();
-    if(id==='leaderboard') renderRanks();
+
+  // KYC
+  async function uploadKYC(){
+    if(!currentUser){ alert("Please login first"); return; }
+    const fileInput=document.getElementById("kycFile");
+    if(!fileInput.files[0]){ alert("Select a file"); return; }
+    const formData=new FormData();
+    formData.append("userId",currentUser.userId);
+    formData.append("file",fileInput.files[0]);
+    const res=await fetch(API_URL+"/api/kyc/upload",{method:"POST",body:formData});
+    const data=await res.json();
+    alert(data.message);
   }
-  
+
+  // Admin KYC
+  async function loadKYC(){
+    const res=await fetch(API_URL+"/api/admin/kyc");
+    const data=await res.json();
+    const div=document.getElementById("adminKycList");
+    div.innerHTML="";
+    if(data.kycs) data.kycs.forEach(k=>{ div.innerHTML+=`<div class="card"><p>User: ${k.userId}</p><p>Status: ${k.status}</p><button onclick="approveKYC('${k._id}')">Approve</button></div>`; });
+    else div.innerHTML="<p>No KYC requests</p>";
+  }
+
+  async function approveKYC(id){
+    const res=await fetch(API_URL+"/api/admin/kyc/approve",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kycId:id})});
+    const data=await res.json();
+    alert(data.message);
+    loadKYC();
+  }
+
+  // Copy Link
   function copyRefLink(){ navigator.clipboard.writeText(document.getElementById("refLink").innerText); alert("Link copied!"); }
-  function copyRefPageLink(){ navigator.clipboard.writeText(document.getElementById("refPageLink").innerText); alert("Link copied!"); }
-  function toggleChat(){ const box=document.getElementById('chatBox'); box.style.display=box.style.display==='block'?'none':'block'; }
-  function sendChatMessage(){ const msg=document.getElementById('chatMessage').value; if(msg){ alert("✅ Message sent to support!"); document.getElementById('chatMessage').value=''; toggleChat(); } }
-  
-  // ==================== STATIC RENDER ====================
-  const plans = [
-    { name: "Nano Bot", price: 29.99, daily: 1, reward: 2 },
-    { name: "Alpha Bot", price: 99.99, daily: 3.5, reward: 7 },
-    { name: "Legend Bot", price: 599.99, daily: 23, reward: 45 }
-  ];
-  function renderPricing(){ document.getElementById('pricingGrid').innerHTML=plans.map(p=>`<div class="bot-card"><h3>${p.name}</h3><p style="font-size:28px; font-weight:bold;">$${p.price}</p><p>Daily: $${p.daily}</p><p>Referral Reward: $${p.reward}</p><button class="btn-primary" onclick="alert('Bot rented!')">Rent Now</button></div>`).join(''); }
-  
-  const faqs = [{q:"How does the bot work?",a:"AI scans exchanges for price differences and executes arbitrage trades."},{q:"Is my money safe?",a:"Yes, funds are stored in secured wallets and verified on blockchain."}];
-  function renderFAQ(){ document.getElementById('faqList').innerHTML=faqs.map(f=>`<div class="card"><h3>${f.q}</h3><p>${f.a}</p></div>`).join(''); }
-  
-  const rankData = { TRAINEE:{salary:0,commission:5}, SILVER:{salary:400,commission:10}, GOLD:{salary:1000,commission:12}, DIAMOND:{salary:2000,commission:15}, MANAGER:{salary:5000,commission:20} };
-  function renderRanks(){ document.getElementById('rankGrid').innerHTML=Object.entries(rankData).map(([r,d])=>`<div class="rank-item"><h3>${r}</h3><div class="rank-salary">$${d.salary}/mo</div><div class="progress-bar"><div class="progress-fill" style="width:${r==='TRAINEE'?'45%':'0%'}"></div></div></div>`).join(''); document.getElementById('directComm').innerText=rankData.TRAINEE.commission; document.getElementById('rankSalary').innerText=0; }
-  
-  renderPricing(); renderFAQ(); renderRanks();
-  
+
+  // Live Chat
+  function openChat(){ alert("💬 Live Chat: Contact support at Telegram @hakim_support"); }
+
   // Check if user is already logged in
   const savedUser = localStorage.getItem("user");
-  if(savedUser){ currentUser=JSON.parse(savedUser); updateDashboard(currentUser); showSection('dashboard'); }
+  if(savedUser){ currentUser=JSON.parse(savedUser); updateDashboard(); }
+
+  // Hide all sections initially, show home
+  document.querySelectorAll('.container section').forEach(s=>s.style.display='none');
+  document.getElementById('home').style.display='flex';
 </script>
 </body>
 </html>
-{
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}
