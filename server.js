@@ -1,396 +1,237 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Hakim AI Arbitrage</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Poppins',sans-serif; background:#05070a; color:#FFD700; overflow-x:hidden; }
-  
-  /* Particles Canvas */
-  .particles { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
-  
-  /* Navbar */
-  nav { background:rgba(17,17,17,0.9); backdrop-filter:blur(10px); padding:15px 20px; display:flex; justify-content:space-between; align-items:center; position:fixed; width:100%; top:0; z-index:1000; flex-wrap:wrap; gap:10px; }
-  nav a { color:#FFD700; margin:0 8px; text-decoration:none; font-weight:bold; transition:0.3s; font-size:14px; }
-  nav a:hover { color:#fff; transform:scale(1.1); }
-  
-  /* Hero Section */
-  .hero { height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; color:#fff; animation:fadeIn 2s ease; background:linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1200'); background-size:cover; background-position:center; position:relative; }
-  .hero h1 { font-size:3em; margin:0; z-index:1; }
-  .hero p { font-size:1.2em; z-index:1; margin:15px 0; }
-  .hero button { z-index:1; }
-  
-  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-  
-  /* Container */
-  .container { padding:100px 20px 30px; max-width:1000px; margin:auto; }
-  
-  /* Cards */
-  .card { background:rgba(34,34,34,0.6); backdrop-filter:blur(10px); padding:25px; border-radius:15px; margin:20px 0; transition:0.3s; border:1px solid rgba(255,215,0,0.1); }
-  .card:hover { transform:translateY(-5px); box-shadow:0 0 20px #FFD700; }
-  
-  /* Buttons */
-  button { background:#FFD700; border:none; padding:12px 24px; cursor:pointer; font-weight:bold; transition:0.3s; border-radius:8px; color:#000; }
-  button:hover { transform:scale(1.05); background:#fff; }
-  
-  /* Inputs */
-  input, select { width:100%; padding:12px; margin:10px 0; border-radius:8px; border:1px solid #FFD700; background:#111; color:#FFD700; }
-  input:focus { outline:none; box-shadow:0 0 10px #FFD700; }
-  
-  /* Tables */
-  table { width:100%; border-collapse:collapse; }
-  th, td { padding:12px; text-align:left; border-bottom:1px solid rgba(255,215,0,0.2); }
-  th { color:#FFD700; }
-  
-  /* Grid */
-  .grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
-  
-  /* Responsive */
-  @media (max-width:768px) { nav { flex-direction:column; } nav div { display:flex; flex-wrap:wrap; justify-content:center; } .hero h1 { font-size:28px; } }
-</style>
-</head>
-<body>
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-<canvas class="particles"></canvas>
+const API = "https://hakim-arbitrage-v8.up.railway.app";
 
-<!-- NAVBAR -->
-<nav>
-  <h2><i class="fa-solid fa-robot"></i> Hakim AI</h2>
-  <div>
-    <a href="#home" onclick="showSection('home');return false;">Home</a>
-    <a href="#auth" onclick="showSection('auth');return false;">Register</a>
-    <a href="#login" onclick="showSection('login');return false;">Login</a>
-    <a href="#dashboard" onclick="showSection('dashboard');return false;">Dashboard</a>
-    <a href="#pricing" onclick="showSection('pricing');return false;">Pricing</a>
-    <a href="#referral" onclick="showSection('referral');return false;">Referral</a>
-    <a href="#leaderboard" onclick="showSection('leaderboard');return false;">Leaderboard</a>
-    <a href="#history" onclick="showSection('history');return false;">History</a>
-    <a href="#kyc" onclick="showSection('kyc');return false;">KYC</a>
-    <a href="#reset" onclick="showSection('reset');return false;">Reset</a>
-    <a href="#admin" onclick="showSection('admin');return false;">Admin</a>
-    <a href="#faq" onclick="showSection('faq');return false;">FAQ</a>
-    <a href="#terms" onclick="showSection('terms');return false;">Terms</a>
-  </div>
-</nav>
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [view, setView] = useState("home");
+  const [users, setUsers] = useState([]);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [referrals, setReferrals] = useState([]);
+  const [otpSent, setOtpSent] = useState(false);
 
-<!-- HERO SECTION -->
-<section id="home" class="hero">
-  <h1>🚀 Hakim AI Arbitrage</h1>
-  <p>Trade smarter. Earn daily profits with AI-powered bots.</p>
-  <button onclick="showSection('dashboard')">Get Started</button>
-</section>
+  useEffect(() => {
+    if (token) loadUser();
+    loadLeaderboard();
+  }, [token]);
 
-<div class="container">
-  <!-- REGISTER SECTION -->
-  <section id="auth" class="card">
-    <h2><i class="fa-solid fa-user-plus"></i> Register</h2>
-    <input id="regName" placeholder="Full Name">
-    <input id="regEmail" placeholder="Email">
-    <input id="regPass" type="password" placeholder="Password">
-    <button onclick="register()">Register</button>
-  </section>
+  async function loadUser() {
+    const res = await axios.get(API + "/user", { headers: { Authorization: `Bearer ${token}` } });
+    setUser(res.data);
+    loadReferrals(res.data._id);
+  }
 
-  <!-- LOGIN SECTION -->
-  <section id="login" class="card">
-    <h2><i class="fa-solid fa-key"></i> Login</h2>
-    <input id="loginEmail" placeholder="Email">
-    <input id="loginPass" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-  </section>
+  async function loadLeaderboard() {
+    const res = await axios.get(API + "/leaderboard");
+    setLeaderboard(res.data);
+  }
 
-  <!-- DASHBOARD SECTION -->
-  <section id="dashboard" class="card">
-    <h2><i class="fa-solid fa-chart-line"></i> Dashboard</h2>
-    <p>Balance: <strong id="balance">$0.00</strong></p>
-    <div class="grid-2">
-      <div><h3>Deposit</h3><input id="depAmount" placeholder="Amount (USDT)"><button onclick="deposit()">Deposit</button></div>
-      <div><h3>Withdraw</h3><input id="wdAmount" placeholder="Amount"><input id="wdAddress" placeholder="Wallet Address"><button onclick="withdraw()">Withdraw</button></div>
+  async function loadReferrals(userId) {
+    const res = await axios.get(API + `/referral/${userId}`);
+    setReferrals(res.data.referrals || []);
+  }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const res = await axios.post(API + "/register", {
+      name: form.get("name"),
+      email: form.get("email"),
+      password: form.get("password"),
+      ref: form.get("ref")
+    });
+    if (res.data.success) alert("Registered! Please login.");
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    const res = await axios.post(API + "/login", {
+      email: e.target.email.value,
+      password: e.target.password.value
+    });
+    if (res.data.token) {
+      localStorage.setItem("token", res.data.token);
+      setToken(res.data.token);
+      setUser(res.data.user);
+    } else alert("Login failed");
+  }
+
+  async function rentBot(botName, botPrice) {
+    const res = await axios.post(API + "/rent-bot", { botName, botPrice }, { headers: { Authorization: `Bearer ${token}` } });
+    alert(res.data.success ? "Bot activated!" : res.data.error);
+    loadUser();
+  }
+
+  async function requestWithdrawOTP() {
+    await axios.post(API + "/withdraw/otp", {}, { headers: { Authorization: `Bearer ${token}` } });
+    setOtpSent(true);
+    alert("OTP sent to your email!");
+  }
+
+  async function confirmWithdraw(e) {
+    e.preventDefault();
+    const res = await axios.post(API + "/withdraw/confirm", {
+      amount: parseFloat(e.target.amount.value),
+      address: e.target.address.value,
+      otp: e.target.otp.value,
+      twoFACode: e.target.twoFACode.value
+    }, { headers: { Authorization: `Bearer ${token}` } });
+    alert(res.data.message || res.data.error);
+    if (res.data.success) loadUser();
+  }
+
+  async function setup2FA() {
+    const res = await axios.get(API + "/2fa/setup", { headers: { Authorization: `Bearer ${token}` } });
+    const qrWindow = window.open();
+    qrWindow.document.write(`<img src="${res.data.qr}" /><p>Secret: ${res.data.secret}</p><p>Enter code in Google Authenticator</p>`);
+  }
+
+  async function verify2FA(code) {
+    const res = await axios.post(API + "/2fa/verify", { code }, { headers: { Authorization: `Bearer ${token}` } });
+    alert(res.data.success ? "2FA Enabled!" : "Invalid code");
+    loadUser();
+  }
+
+  if (!token) {
+    return (
+      <div style={{ background: "#05070a", color: "#f3ba2f", minHeight: "100vh", fontFamily: "Poppins" }}>
+        <div style={{ maxWidth: 500, margin: "auto", padding: 40 }}>
+          <h1 style={{ color: "#f3ba2f", textAlign: "center" }}>🚀 Hakim AI</h1>
+          <form onSubmit={handleRegister} style={{ background: "#1a1f2c", padding: 25, borderRadius: 20, marginBottom: 20 }}>
+            <h2>Register</h2>
+            <input name="name" placeholder="Name" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
+            <input name="email" type="email" placeholder="Email" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
+            <input name="password" type="password" placeholder="Password" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
+            <input name="ref" placeholder="Referral Code (optional)" style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
+            <button type="submit" style={{ background: "#f3ba2f", color: "black", padding: 12, borderRadius: 8, width: "100%", fontWeight: "bold" }}>Register</button>
+          </form>
+
+          <form onSubmit={handleLogin} style={{ background: "#1a1f2c", padding: 25, borderRadius: 20 }}>
+            <h2>Login</h2>
+            <input name="email" type="email" placeholder="Email" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
+            <input name="password" type="password" placeholder="Password" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
+            <button type="submit" style={{ background: "#f3ba2f", color: "black", padding: 12, borderRadius: 8, width: "100%", fontWeight: "bold" }}>Login</button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background: "#05070a", color: "white", fontFamily: "Poppins", minHeight: "100vh" }}>
+      <nav style={{ background: "#111", padding: "15px 20px", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+        <h2 style={{ color: "#f3ba2f" }}>Hakim AI</h2>
+        <div style={{ display: "flex", gap: 15 }}>
+          <button onClick={() => setView("home")} style={{ background: "none", color: "#f3ba2f" }}>Home</button>
+          <button onClick={() => setView("dashboard")} style={{ background: "none", color: "#f3ba2f" }}>Dashboard</button>
+          <button onClick={() => setView("bots")} style={{ background: "none", color: "#f3ba2f" }}>Bots</button>
+          <button onClick={() => setView("leaderboard")} style={{ background: "none", color: "#f3ba2f" }}>Leaderboard</button>
+          <button onClick={() => setView("referral")} style={{ background: "none", color: "#f3ba2f" }}>Referral</button>
+          <button onClick={() => { localStorage.clear(); setToken(null); setUser(null); }} style={{ background: "none", color: "red" }}>Logout</button>
+        </div>
+      </nav>
+
+      <div style={{ maxWidth: 1200, margin: "auto", padding: 30 }}>
+        {view === "home" && (
+          <div style={{ textAlign: "center", padding: 40 }}>
+            <h1 style={{ fontSize: 48, color: "#f3ba2f" }}>🤖 AI Arbitrage Trading</h1>
+            <p style={{ color: "#8a92a3" }}>Automated trading bot • 0.5-3% daily profit • 24/7</p>
+            <button onClick={() => setView("dashboard")} style={{ background: "#f3ba2f", color: "black", padding: "12px 30px", borderRadius: 30, fontSize: 18, marginTop: 20 }}>Get Started</button>
+            <div style={{ marginTop: 40, background: "#1a1f2c", padding: 20, borderRadius: 20 }}>
+              <h3>📈 Live BTC Price</h3>
+              <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=1" width="100%" height="300" style={{ border: "none", borderRadius: 12 }}></iframe>
+            </div>
+          </div>
+        )}
+
+        {view === "dashboard" && user && (
+          <div>
+            <div style={{ background: "linear-gradient(135deg,#1a1f2c,#0f121a)", borderRadius: 28, padding: 30, textAlign: "center", marginBottom: 30 }}>
+              <h2>Welcome, {user.name}</h2>
+              <div style={{ fontSize: 48, fontWeight: "bold", color: "#f3ba2f" }}>${user.balance?.toFixed(2)}</div>
+              <p>Rank: <strong>{user.rank}</strong> | Bot: {user.botPlan}</p>
+            </div>
+
+            <div style={{ background: "#1a1f2c", borderRadius: 20, padding: 25, marginBottom: 20 }}>
+              <h3>📥 Your Deposit Addresses</h3>
+              <p><strong>BEP20:</strong> {user.walletBEP20}</p>
+              <p><strong>TRC20:</strong> {user.walletTRC20}</p>
+              <p style={{ color: "#f6465d", fontSize: 12 }}>⚠️ Send only USDT to these addresses</p>
+            </div>
+
+            <div style={{ background: "#1a1f2c", borderRadius: 20, padding: 25, marginBottom: 20 }}>
+              <h3>📤 Withdraw Funds</h3>
+              {!otpSent && <button onClick={requestWithdrawOTP} style={{ background: "#f3ba2f", color: "black", padding: 12, borderRadius: 10, width: "100%" }}>Send OTP to Email</button>}
+              {otpSent && (
+                <form onSubmit={confirmWithdraw}>
+                  <input name="amount" type="number" placeholder="Amount (USDT)" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
+                  <input name="address" placeholder="BEP20/TRC20 Address" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
+                  <input name="otp" placeholder="OTP Code" required style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
+                  <input name="twoFACode" placeholder="2FA Code (if enabled)" style={{ width: "100%", padding: 10, margin: "10px 0", background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
+                  <button type="submit" style={{ background: "#f3ba2f", color: "black", padding: 12, borderRadius: 8, width: "100%", fontWeight: "bold" }}>Confirm Withdrawal</button>
+                </form>
+              )}
+            </div>
+
+            <div style={{ background: "#1a1f2c", borderRadius: 20, padding: 25 }}>
+              <h3>🔐 Security</h3>
+              {!user.twoFAEnabled ? (
+                <>
+                  <button onClick={setup2FA} style={{ background: "#f3ba2f", color: "black", padding: 10, borderRadius: 8, marginRight: 10 }}>Setup 2FA</button>
+                  <input id="2faCode" placeholder="Enter 2FA code" style={{ padding: 10, background: "#0a0c10", color: "white", border: "1px solid #f3ba2f", borderRadius: 8 }} />
+                  <button onClick={() => verify2FA(document.getElementById("2faCode").value)} style={{ background: "#f3ba2f", color: "black", padding: 10, borderRadius: 8 }}>Verify 2FA</button>
+                </>
+              ) : <p style={{ color: "#0ecb81" }}>✅ 2FA Enabled</p>}
+            </div>
+          </div>
+        )}
+
+        {view === "bots" && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 20 }}>
+            {[{ name: "Nano Bot", price: 49.99 }, { name: "Alpha Bot", price: 99.99 }, { name: "Pro Bot", price: 199.99 }, { name: "Elite Bot", price: 399.99 }, { name: "Legend Bot", price: 599.99 }].map(bot => (
+              <div key={bot.name} style={{ background: "#1a1f2c", borderRadius: 20, padding: 25, textAlign: "center" }}>
+                <h3>{bot.name}</h3>
+                <p style={{ fontSize: 28, fontWeight: "bold", color: "#f3ba2f" }}>${bot.price}</p>
+                <button onClick={() => rentBot(bot.name, bot.price)} style={{ background: "#f3ba2f", color: "black", padding: 10, borderRadius: 8, width: "100%" }}>Rent Bot</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {view === "leaderboard" && (
+          <div>
+            <h2 style={{ color: "#f3ba2f" }}>🏆 Leaderboard</h2>
+            {leaderboard.map((u, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", background: "#1a1f2c", padding: 15, borderRadius: 12, marginBottom: 10 }}>
+                <span>#{i + 1} {u.name}</span>
+                <span>💰 ${u.balance?.toFixed(2)}</span>
+                <span>👥 {u.referrals} refs</span>
+                <span>🏅 {u.rank}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {view === "referral" && (
+          <div>
+            <div style={{ background: "#1a1f2c", borderRadius: 20, padding: 25, textAlign: "center", marginBottom: 20 }}>
+              <h3>Your Referral Code</h3>
+              <p style={{ fontSize: 24, color: "#f3ba2f" }}>{user.referralCode}</p>
+              <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}?ref=${user.referralCode}`)} style={{ background: "#f3ba2f", color: "black", padding: 10, borderRadius: 8 }}>Copy Link</button>
+              <p>Total Referrals: {referrals.length}</p>
+              <p>Earnings: ${user.referralEarnings?.toFixed(2)}</p>
+            </div>
+            {referrals.length > 0 && (
+              <div style={{ background: "#1a1f2c", borderRadius: 20, padding: 25 }}>
+                <h3>Your Referrals</h3>
+                {referrals.map((r, i) => <p key={i}>{r.name} - {r.email}</p>)}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
-  </section>
-
-  <!-- PRICING SECTION -->
-  <section id="pricing" class="card">
-    <h2><i class="fa-solid fa-tags"></i> Pricing Plans</h2>
-    <div class="grid-2">
-      <div class="card"><h3>Nano Bot</h3><p>$10/month – $1 daily profit</p><button>Select</button></div>
-      <div class="card"><h3>Alpha Bot</h3><p>$50/month – $3.5 daily profit</p><button>Select</button></div>
-      <div class="card"><h3>Legend Bot</h3><p>$300/month – $23 daily profit</p><button>Select</button></div>
-    </div>
-  </section>
-
-  <!-- REFERRAL SECTION -->
-  <section id="referral" class="card">
-    <h2><i class="fa-solid fa-users"></i> Referral</h2>
-    <p>Referrals: <span id="refCount">0</span></p>
-    <p>Earnings: $<span id="refEarnings">0</span></p>
-    <p>Rank: <span id="userRank">TRAINEE</span></p>
-    <p>Your Referral Link: <strong id="refLink">Loading...</strong></p>
-    <button onclick="copyRefLink()">Copy Link</button>
-  </section>
-
-  <!-- LEADERBOARD SECTION -->
-  <section id="leaderboard" class="card">
-    <h2><i class="fa-solid fa-trophy"></i> Leaderboard</h2>
-    <div class="grid-2">
-      <div><h3>TRAINEE</h3><p>$0/month</p><p>0 referrals</p></div>
-      <div><h3>BEGINNER</h3><p>$50/month</p><p>5 referrals</p></div>
-      <div><h3>SILVER</h3><p>$100/month</p><p>20 referrals</p></div>
-      <div><h3>GOLD</h3><p>$300/month</p><p>5 Silver leaders</p></div>
-      <div><h3>DIAMOND</h3><p>$1000/month</p><p>10 Gold leaders</p></div>
-      <div><h3>MANAGER</h3><p>$2000/month</p><p>5 Diamond leaders</p></div>
-    </div>
-  </section>
-
-  <!-- HISTORY SECTION -->
-  <section id="history" class="card">
-    <h2><i class="fa-solid fa-clock-rotate-left"></i> Transaction History</h2>
-    <table>
-      <thead><tr><th>Type</th><th>Amount</th><th>TXID</th><th>Status</th><th>Date</th></tr></thead>
-      <tbody id="historyBody"><tr><td colspan="5">No transactions yet</td></tr></tbody>
-    </table>
-  </section>
-
-  <!-- KYC SECTION -->
-  <section id="kyc" class="card">
-    <h2><i class="fa-solid fa-id-card"></i> KYC Verification</h2>
-    <input type="file" id="kycFile" accept="image/*">
-    <button onclick="uploadKYC()">Submit KYC</button>
-    <div id="kycList"></div>
-  </section>
-
-  <!-- RESET PASSWORD SECTION -->
-  <section id="reset" class="card">
-    <h2><i class="fa-solid fa-lock"></i> Reset Password</h2>
-    <input id="resetEmail" placeholder="Email">
-    <button onclick="resetPasswordRequest()">Send Code</button>
-    <input id="resetCode" placeholder="Reset Code">
-    <input id="newPassword" type="password" placeholder="New Password">
-    <button onclick="resetPasswordConfirm()">Reset Password</button>
-  </section>
-
-  <!-- ADMIN SECTION -->
-  <section id="admin" class="card">
-    <h2><i class="fa-solid fa-user-shield"></i> Admin Panel</h2>
-    <button onclick="loadKYC()">Load KYC Requests</button>
-    <div id="adminKycList"></div>
-  </section>
-
-  <!-- FAQ SECTION -->
-  <section id="faq" class="card">
-    <h2><i class="fa-solid fa-question-circle"></i> FAQ</h2>
-    <p><b>❓ How does Hakim AI Arbitrage work?</b><br>It automates trading bots to find price differences across exchanges and execute profitable trades 24/7.</p>
-    <p><b>❓ How do I withdraw?</b><br>Go to Dashboard → Withdraw form. Minimum withdrawal is $10 USDT.</p>
-    <p><b>❓ Is my money safe?</b><br>Yes, funds are stored in secured wallets with 2FA and admin approval for withdrawals.</p>
-  </section>
-
-  <!-- TERMS SECTION -->
-  <section id="terms" class="card">
-    <h2><i class="fa-solid fa-file-contract"></i> Terms & Conditions</h2>
-    <p>By using Hakim AI Arbitrage, you agree to our trading rules, risk disclaimers, and compliance with KYC/AML regulations. Trading involves risk. We do not guarantee profits.</p>
-  </section>
-</div>
-
-<!-- LIVE CHAT BUTTON -->
-<button style="position:fixed;bottom:20px;right:20px;background:#FFD700;color:#000;border-radius:50%;width:55px;height:55px;font-size:24px;z-index:1000;" onclick="openChat()">💬</button>
-
-<script>
-  // ==================== PARTICLES ANIMATION ====================
-  const canvas = document.querySelector(".particles");
-  const ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  let particlesArray = [];
-  const colors = ["#FFD700","#ffffff","#ffcc00"];
-
-  class Particle {
-    constructor(x,y,size,color){
-      this.x=x; this.y=y; this.size=size; this.color=color;
-      this.speedX=Math.random()*1.5-0.75;
-      this.speedY=Math.random()*1.5-0.75;
-    }
-    update(){
-      this.x+=this.speedX; this.y+=this.speedY;
-      if(this.size>0.2) this.size-=0.008;
-    }
-    draw(){ ctx.fillStyle=this.color; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); }
-  }
-
-  function initParticles(){
-    particlesArray=[];
-    for(let i=0;i<80;i++){
-      let size=Math.random()*4+1;
-      let x=Math.random()*canvas.width;
-      let y=Math.random()*canvas.height;
-      let color=colors[Math.floor(Math.random()*colors.length)];
-      particlesArray.push(new Particle(x,y,size,color));
-    }
-  }
-
-  function animateParticles(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    for(let i=0;i<particlesArray.length;i++){
-      particlesArray[i].update();
-      particlesArray[i].draw();
-    }
-    requestAnimationFrame(animateParticles);
-  }
-
-  initParticles();
-  animateParticles();
-  window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; initParticles(); });
-
-  // ==================== API INTEGRATION ====================
-  const API_URL = "https://hakim-arbitrage-v8.up.railway.app";
-  let currentUser = null;
-
-  // Show/Hide Sections
-  function showSection(id){
-    document.querySelectorAll('.container section').forEach(s=>s.style.display='none');
-    document.getElementById(id).style.display='block';
-    document.getElementById('home').style.display='none';
-  }
-
-  // Register
-  async function register(){
-    const name=document.getElementById("regName").value;
-    const email=document.getElementById("regEmail").value;
-    const password=document.getElementById("regPass").value;
-    if(!name||!email||!password){ alert("Fill all fields"); return; }
-    const res=await fetch(API_URL+"/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,email,password})});
-    const data=await res.json();
-    if(data.success){ alert(`✅ Account created!\nYour BEP20: ${data.user.bep20Address}\nTRC20: ${data.user.trc20Address}`); showSection('login'); }
-    else alert("Registration failed: "+data.message);
-  }
-
-  // Login
-  async function login(){
-    const email=document.getElementById("loginEmail").value;
-    const password=document.getElementById("loginPass").value;
-    if(!email||!password){ alert("Enter email and password"); return; }
-    const res=await fetch(API_URL+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
-    const data=await res.json();
-    if(data.success){
-      currentUser=data.user;
-      localStorage.setItem("user",JSON.stringify(currentUser));
-      updateDashboard();
-      showSection('dashboard');
-      alert(`✅ Welcome ${currentUser.name}!`);
-    } else alert("Login failed: "+data.message);
-  }
-
-  // Update Dashboard
-  function updateDashboard(){
-    if(!currentUser) return;
-    document.getElementById("balance").innerText=`$${currentUser.balance.toFixed(2)}`;
-    document.getElementById("refCount").innerText=currentUser.referralCount||0;
-    document.getElementById("refEarnings").innerText=currentUser.referralEarnings||0;
-    document.getElementById("userRank").innerText=currentUser.rank||"TRAINEE";
-    document.getElementById("refLink").innerText=`${window.location.origin}?ref=${currentUser.referralCode}`;
-    loadTransactionHistory();
-  }
-
-  // Deposit
-  async function deposit(){
-    if(!currentUser){ alert("Please login first"); return; }
-    const amount=parseFloat(document.getElementById("depAmount").value);
-    if(!amount||amount<30){ alert("Minimum deposit $30"); return; }
-    const res=await fetch(API_URL+"/api/deposit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:currentUser.userId,amount,txid:"demoTX"+Date.now()})});
-    const data=await res.json();
-    alert(data.message);
-    if(data.success){ currentUser.balance+=amount; updateDashboard(); }
-  }
-
-  // Withdraw
-  async function withdraw(){
-    if(!currentUser){ alert("Please login first"); return; }
-    const amount=parseFloat(document.getElementById("wdAmount").value);
-    const address=document.getElementById("wdAddress").value;
-    if(!amount||amount<10){ alert("Minimum withdrawal $10"); return; }
-    if(!address){ alert("Enter wallet address"); return; }
-    const res=await fetch(API_URL+"/api/withdraw/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:currentUser.userId,amount,address,emailCode:"123456",twoFACode:"000000",paymentPassword:"demo123"})});
-    const data=await res.json();
-    alert(data.message);
-    if(data.success){ currentUser.balance-=amount; updateDashboard(); }
-  }
-
-  // Transaction History
-  async function loadTransactionHistory(){
-    if(!currentUser) return;
-    const res=await fetch(API_URL+"/api/history/"+currentUser.userId);
-    const data=await res.json();
-    if(data.success){
-      const tbody=document.getElementById("historyBody");
-      if(data.transactions.length===0) tbody.innerHTML='<tr><td colspan="5">No transactions yet</td></tr>';
-      else tbody.innerHTML=data.transactions.map(t=>`<tr><td>${t.type}</td><td>$${t.amount}</td><td>${t.txid}</td><td>${t.status}</td><td>${new Date(t.createdAt).toLocaleDateString()}</td></tr>`).join('');
-    }
-  }
-
-  // Reset Password
-  async function resetPasswordRequest(){
-    const email=document.getElementById("resetEmail").value;
-    if(!email){ alert("Enter email"); return; }
-    const res=await fetch(API_URL+"/api/auth/reset-password-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
-    const data=await res.json();
-    alert(data.message);
-  }
-
-  async function resetPasswordConfirm(){
-    const email=document.getElementById("resetEmail").value;
-    const code=document.getElementById("resetCode").value;
-    const newPassword=document.getElementById("newPassword").value;
-    if(!email||!code||!newPassword){ alert("Fill all fields"); return; }
-    const res=await fetch(API_URL+"/api/auth/reset-password-confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code,newPassword})});
-    const data=await res.json();
-    alert(data.message);
-  }
-
-  // KYC
-  async function uploadKYC(){
-    if(!currentUser){ alert("Please login first"); return; }
-    const fileInput=document.getElementById("kycFile");
-    if(!fileInput.files[0]){ alert("Select a file"); return; }
-    const formData=new FormData();
-    formData.append("userId",currentUser.userId);
-    formData.append("file",fileInput.files[0]);
-    const res=await fetch(API_URL+"/api/kyc/upload",{method:"POST",body:formData});
-    const data=await res.json();
-    alert(data.message);
-  }
-
-  // Admin KYC
-  async function loadKYC(){
-    const res=await fetch(API_URL+"/api/admin/kyc");
-    const data=await res.json();
-    const div=document.getElementById("adminKycList");
-    div.innerHTML="";
-    if(data.kycs) data.kycs.forEach(k=>{ div.innerHTML+=`<div class="card"><p>User: ${k.userId}</p><p>Status: ${k.status}</p><button onclick="approveKYC('${k._id}')">Approve</button></div>`; });
-    else div.innerHTML="<p>No KYC requests</p>";
-  }
-
-  async function approveKYC(id){
-    const res=await fetch(API_URL+"/api/admin/kyc/approve",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kycId:id})});
-    const data=await res.json();
-    alert(data.message);
-    loadKYC();
-  }
-
-  // Copy Link
-  function copyRefLink(){ navigator.clipboard.writeText(document.getElementById("refLink").innerText); alert("Link copied!"); }
-
-  // Live Chat
-  function openChat(){ alert("💬 Live Chat: Contact support at Telegram @hakim_support"); }
-
-  // Check if user is already logged in
-  const savedUser = localStorage.getItem("user");
-  if(savedUser){ currentUser=JSON.parse(savedUser); updateDashboard(); }
-
-  // Hide all sections initially, show home
-  document.querySelectorAll('.container section').forEach(s=>s.style.display='none');
-  document.getElementById('home').style.display='flex';
-</script>
-</body>
-</html>
+  );
+}
