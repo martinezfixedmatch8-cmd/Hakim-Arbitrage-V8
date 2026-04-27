@@ -1,0 +1,123 @@
+<section class="features" style="background-color:transparent;color:#fff;padding:80px 0;text-align:center;">
+  <div class="container">
+    <h2 class="fade-in" style="color:#00BFFF;font-size:42px;margin-bottom:50px;">Hakim AI Arbitrage Features</h2>
+
+    <div class="features-grid">
+      <div class="feature-card glow">
+        <h3>⚙️ Quantum Core</h3>
+        <p>Algorithm scans 24/7 for profit opportunities.</p>
+      </div>
+
+      <div class="feature-card glow">
+        <h3>🌍 Global Arbitrage</h3>
+        <p>Operate in 120+ countries with advanced liquidity.</p>
+      </div>
+
+      <div class="feature-card glow">
+        <h3>⚡ Real‑Time Trading</h3>
+        <p>Millisecond execution with real‑time data.</p>
+      </div>
+
+      <div class="feature-card glow">
+        <h3>🔒 Security First</h3>
+        <p>Bank‑grade encryption and asset protection.</p>
+      </div>
+
+      <div class="feature-card glow">
+        <h3>🚀 Future Growth</h3>
+        <p>Sustainable growth with AI innovation.</p>
+      </div>
+
+      <div class="feature-card glow">
+        <h3>🤖 24/7 Working</h3>
+        <p>Bots around the clock for you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.features-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+}
+
+.feature-card {
+  flex: 1 1 300px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 30px;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  animation: fadeInUp 1s ease forwards;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card h3 {
+  color: #FFD700;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.feature-card p {
+  color: #E0E0E0;
+  font-size: 18px;
+}
+
+/* Hover glow effect */
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 25px rgba(0, 191, 255, 0.8);
+}
+
+/* Animated glow pulse */
+.glow::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0,191,255,0.3) 0%, transparent 70%);
+  animation: pulseGlow 3s infinite ease-in-out;
+  z-index: 0;
+}
+
+.glow * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 1.2s ease forwards;
+}
+</style>
